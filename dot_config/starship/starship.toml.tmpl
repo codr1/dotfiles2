@@ -1,0 +1,202 @@
+# Starship prompt configuration - managed by chezmoi
+# Profile: {{ .profile }} | Theme: {{ .starship_theme }} | Host: {{ .hostname }}
+
+format = """
+$hostname\
+[░▒▓](#7aa2f7)\
+[ ✦ ](bg:#7aa2f7 fg:#1a1b26)\
+[](bg:#3b4261 fg:#7aa2f7)\
+$directory\
+[](fg:#3b4261 bg:#292e42)\
+$git_branch\
+$git_status\
+[](fg:#292e42 bg:#1f2335)\
+{{- if has "c" .starship_languages }}
+$c\
+{{- end }}
+{{- if has "cpp" .starship_languages }}
+$cpp\
+{{- end }}
+{{- if has "container" .starship_languages }}
+$container\
+{{- end }}
+{{- if has "lua" .starship_languages }}
+$lua\
+{{- end }}
+{{- if has "conda" .starship_languages }}
+$conda\
+{{- end }}
+{{- if has "nodejs" .starship_languages }}
+$nodejs\
+{{- end }}
+{{- if has "java" .starship_languages }}
+$java\
+{{- end }}
+{{- if has "rust" .starship_languages }}
+$rust\
+{{- end }}
+{{- if has "go" .starship_languages }}
+$golang\
+{{- end }}
+{{- if has "php" .starship_languages }}
+$php\
+{{- end }}
+{{- if has "python" .starship_languages }}
+$python\
+{{- end }}
+[](fg:#1f2335 bg:#1a1b26)\
+{{- if .starship_show_time }}
+$time\
+{{- end }}
+[ ](fg:#1a1b26)\
+\n$character"""
+
+[directory]
+style = "fg:#c0caf5 bg:#3b4261"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+{{- if .starship_show_icons }}
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+{{- end }}
+
+[git_branch]
+symbol = ""
+style = "bg:#394260"
+format = '[[ $symbol $branch ](fg:#769ff0 bg:#394260)]($style)'
+
+[git_status]
+style = "bg:#394260"
+format = '[[($all_status$ahead_behind )](fg:#769ff0 bg:#394260)]($style)'
+# Performance optimizations
+ignore_submodules = true
+
+{{- if has "c" .starship_languages }}
+
+[c]
+symbol = " "
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "cpp" .starship_languages }}
+
+[cpp]
+symbol = " "
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "conda" .starship_languages }}
+
+[conda]
+symbol = " "
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "container" .starship_languages }}
+
+[container]
+symbol = " "
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "lua" .starship_languages }}
+
+[lua]
+symbol = " "
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "nodejs" .starship_languages }}
+
+[nodejs]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "java" .starship_languages }}
+
+[java]
+symbol = " "
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "rust" .starship_languages }}
+
+[rust]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "go" .starship_languages }}
+
+[golang]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "php" .starship_languages }}
+
+[php]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if has "python" .starship_languages }}
+
+[python]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+{{- end }}
+
+{{- if .starship_show_time }}
+
+[time]
+disabled = false
+time_format = "%R"
+style = "fg:#a9b1d6 bg:#1a1b26"
+format = '[  $time ]($style)'
+{{- end }}
+
+{{- if eq .starship_hostname_mode "always" }}
+
+[hostname]
+ssh_only = false
+style = "bg:#2a5287 fg:#1a1b26"
+format = '[ $hostname](bg:#1a4176 fg:#8a8b96)'
+{{- else if eq .starship_hostname_mode "ssh-only" }}
+
+[hostname]
+ssh_only = true
+style = "bg:#2a5287 fg:#1a1b26"
+format = '[ $hostname](bg:#1a4176 fg:#8a8b96)'
+{{- else }}
+
+[hostname]
+disabled = true
+{{- end }}
+
+# Performance optimizations
+command_timeout = 500
+
+# TokyoNight color scheme
+# Primary: #7aa2f7 (blue)
+# Background: #1a1b26 (dark)
+# Foreground: #c0caf5 (light blue)
+# Accent: #769ff0 (lighter blue)

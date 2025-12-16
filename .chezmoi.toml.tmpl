@@ -8,6 +8,13 @@
 {{- $terminal := "ghostty" -}}
 {{- $modkey := "Mod4" -}}
 
+{{/* Starship prompt configuration */}}
+{{- $starship_languages := list "go" "python" "nodejs" -}}
+{{- $starship_show_time := true -}}
+{{- $starship_hostname_mode := "always" -}}
+{{- $starship_show_icons := true -}}
+{{- $starship_theme := "tokyonight" -}}
+
 {{/* Auto-detect profile */}}
 {{- if env "WSL_DISTRO_NAME" -}}
 {{-   $profile = "wsl" -}}
@@ -41,3 +48,10 @@
     terminal = {{ $terminal | quote }}
     modkey = {{ $modkey | quote }}
     hostname = {{ .chezmoi.hostname | quote }}
+
+    # Starship prompt configuration
+    starship_languages = {{ $starship_languages | toJson }}
+    starship_show_time = {{ $starship_show_time }}
+    starship_hostname_mode = {{ $starship_hostname_mode | quote }}
+    starship_show_icons = {{ $starship_show_icons }}
+    starship_theme = {{ $starship_theme | quote }}
