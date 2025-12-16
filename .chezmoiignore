@@ -1,0 +1,8 @@
+# Don't deploy repo files to home dir
+README.md
+
+# Ignore swaylock on WSL and VM (no lock screen needed)
+{{ if ne .profile "bare-metal" }}
+.config/swaylock
+.config/swaylock/config
+{{ end }}
