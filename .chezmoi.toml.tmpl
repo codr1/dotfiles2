@@ -7,6 +7,7 @@
 {{- $multimonitor := false -}}
 {{- $terminal := "ghostty" -}}
 {{- $modkey := "Mod4" -}}
+{{- $theme := "tokyonight-night" -}}
 
 {{/* Starship prompt configuration */}}
 {{- $starship_languages := list "go" "python" "nodejs" -}}
@@ -33,6 +34,7 @@
 {{-   $wm = promptStringOnce . "wm" "Window manager (sway/hyprland/i3)" $wm -}}
 {{-   $scale = promptStringOnce . "scale" "Display scale (1.0/1.25/1.5/2.0)" $scale -}}
 {{-   $multimonitor = promptBoolOnce . "multimonitor" "Multi-monitor setup" $multimonitor -}}
+{{-   $theme = promptStringOnce . "theme" "Theme (tokyonight-night/tokyonight-storm/nord/catppuccin-mocha/catppuccin-latte/dracula)" $theme -}}
 {{-   if eq $profile "wsl" -}}
 {{-     $terminal = "foot" -}}
 {{-   else -}}
@@ -48,6 +50,7 @@
     terminal = {{ $terminal | quote }}
     modkey = {{ $modkey | quote }}
     hostname = {{ .chezmoi.hostname | quote }}
+    theme = {{ $theme | quote }}
 
     # Starship prompt configuration
     starship_languages = {{ $starship_languages | toJson }}
@@ -55,3 +58,129 @@
     starship_hostname_mode = {{ $starship_hostname_mode | quote }}
     starship_show_icons = {{ $starship_show_icons }}
     starship_theme = {{ $starship_theme | quote }}
+
+# =============================================================================
+# Theme Definitions
+# =============================================================================
+# Each theme defines colors for the entire desktop environment.
+# Terminal themes are referenced by name (terminals have their own theme files).
+
+[data.themes.tokyonight-night]
+    name = "TokyoNight Night"
+    terminal_theme = "tokyonight-night"     # foot: /usr/share/foot/themes/
+    ghostty_theme = "TokyoNight"            # ghostty theme name
+    background = "#1a1b26"
+    background_alt = "#24283b"
+    background_darker = "#16161e"
+    foreground = "#c0caf5"
+    foreground_alt = "#565f89"
+    primary = "#7aa2f7"
+    secondary = "#7dcfff"
+    red = "#f7768e"
+    green = "#9ece6a"
+    yellow = "#e0af68"
+    blue = "#7aa2f7"
+    magenta = "#bb9af7"
+    cyan = "#7dcfff"
+    orange = "#ff9e64"
+    urgent = "#f7768e"
+
+[data.themes.tokyonight-storm]
+    name = "TokyoNight Storm"
+    terminal_theme = "tokyonight-storm"
+    ghostty_theme = "TokyoNight"
+    background = "#24283b"
+    background_alt = "#1f2335"
+    background_darker = "#1a1b26"
+    foreground = "#c0caf5"
+    foreground_alt = "#565f89"
+    primary = "#7aa2f7"
+    secondary = "#7dcfff"
+    red = "#f7768e"
+    green = "#9ece6a"
+    yellow = "#e0af68"
+    blue = "#7aa2f7"
+    magenta = "#bb9af7"
+    cyan = "#7dcfff"
+    orange = "#ff9e64"
+    urgent = "#f7768e"
+
+[data.themes.nord]
+    name = "Nord"
+    terminal_theme = "nord"
+    ghostty_theme = "nord"
+    background = "#2e3440"
+    background_alt = "#3b4252"
+    background_darker = "#242933"
+    foreground = "#eceff4"
+    foreground_alt = "#d8dee9"
+    primary = "#88c0d0"
+    secondary = "#81a1c1"
+    red = "#bf616a"
+    green = "#a3be8c"
+    yellow = "#ebcb8b"
+    blue = "#5e81ac"
+    magenta = "#b48ead"
+    cyan = "#8fbcbb"
+    orange = "#d08770"
+    urgent = "#bf616a"
+
+[data.themes.catppuccin-mocha]
+    name = "Catppuccin Mocha"
+    terminal_theme = "catppuccin-mocha"
+    ghostty_theme = "catppuccin-mocha"
+    background = "#1e1e2e"
+    background_alt = "#313244"
+    background_darker = "#181825"
+    foreground = "#cdd6f4"
+    foreground_alt = "#a6adc8"
+    primary = "#89b4fa"
+    secondary = "#74c7ec"
+    red = "#f38ba8"
+    green = "#a6e3a1"
+    yellow = "#f9e2af"
+    blue = "#89b4fa"
+    magenta = "#cba6f7"
+    cyan = "#94e2d5"
+    orange = "#fab387"
+    urgent = "#f38ba8"
+
+[data.themes.catppuccin-latte]
+    name = "Catppuccin Latte"
+    terminal_theme = "catppuccin-latte"
+    ghostty_theme = "catppuccin-latte"
+    background = "#eff1f5"
+    background_alt = "#e6e9ef"
+    background_darker = "#dce0e8"
+    foreground = "#4c4f69"
+    foreground_alt = "#6c6f85"
+    primary = "#1e66f5"
+    secondary = "#04a5e5"
+    red = "#d20f39"
+    green = "#40a02b"
+    yellow = "#df8e1d"
+    blue = "#1e66f5"
+    magenta = "#8839ef"
+    cyan = "#179299"
+    orange = "#fe640b"
+    urgent = "#d20f39"
+
+[data.themes.dracula]
+    name = "Dracula"
+    terminal_theme = "dracula"
+    ghostty_theme = "Dracula"
+    background = "#282a36"
+    background_alt = "#44475a"
+    background_darker = "#21222c"
+    foreground = "#f8f8f2"
+    foreground_alt = "#6272a4"
+    primary = "#bd93f9"
+    secondary = "#8be9fd"
+    red = "#ff5555"
+    green = "#50fa7b"
+    yellow = "#f1fa8c"
+    blue = "#6272a4"
+    magenta = "#ff79c6"
+    cyan = "#8be9fd"
+    orange = "#ffb86c"
+    urgent = "#ff5555"

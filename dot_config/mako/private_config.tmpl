@@ -1,10 +1,11 @@
-# Tokyonight theme for mako
+{{- $t := index .themes .theme -}}
+# {{ $t.name }} theme for mako - managed by chezmoi
 
 # Font & colors
 font=JetBrainsMono Nerd Font 11
-background-color=#1a1b26
-text-color=#c0caf5
-border-color=#7aa2f7
+background-color={{ $t.background }}
+text-color={{ $t.foreground }}
+border-color={{ $t.primary }}
 border-size=2
 border-radius=8
 padding=15
@@ -32,9 +33,9 @@ ignore-timeout=0
 
 [urgency=low]
 default-timeout=3000
-border-color=#565f89
+border-color={{ $t.foreground_alt }}
 
 [urgency=high]
 default-timeout=0
-border-color=#f7768e
-background-color=#24283b
+border-color={{ $t.red }}
+background-color={{ $t.background_alt }}

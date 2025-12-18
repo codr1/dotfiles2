@@ -1,3 +1,6 @@
+{{- $t := index .themes .theme -}}
+/* {{ $t.name }} theme for waybar - managed by chezmoi */
+
 #waybar {
   font-family:
     "JetBrains Mono",
@@ -17,9 +20,8 @@ window#waybar {
   box-shadow: none;
   text-shadow: none;
   transition-duration: 0s;
-  color: rgba(217, 216, 216, 1);
-  /*background: #1a1b26;*/
-  background-color: rgba(26, 27, 38, 0.9);
+  color: {{ $t.foreground }};
+  background-color: {{ $t.background }}e6;
 }
 
 #workspaces {
@@ -30,39 +32,39 @@ window#waybar {
 
 #workspaces button {
   padding: 0 8px;
-  color: #565f89;
-  border: 3px solid rgba(9, 85, 225, 0);
+  color: {{ $t.foreground_alt }};
+  border: 3px solid transparent;
   border-radius: 10px;
   min-width: 33px;
 }
 
 #workspaces button.visible {
-  color: #a9b1d6;
+  color: {{ $t.foreground }};
 }
 
 #workspaces button.focused {
-  border-top: 3px solid #7aa2f7;
-  border-bottom: 3px solid #7aa2f7;
+  border-top: 3px solid {{ $t.primary }};
+  border-bottom: 3px solid {{ $t.primary }};
 }
 
 #workspaces button.urgent {
-  background-color: #a96d1f;
-  color: white;
+  background-color: {{ $t.orange }};
+  color: {{ $t.background }};
 }
 
 #workspaces button:hover {
   box-shadow: inherit;
-  border-color: #bb9af7;
-  color: #bb9af7;
+  border-color: {{ $t.magenta }};
+  color: {{ $t.magenta }};
 }
 
 /* Repeat style here to ensure properties are overwritten as there's no !important and button:hover above resets the colour */
 
 #workspaces button.focused {
-  color: #7aa2f7;
+  color: {{ $t.primary }};
 }
 #workspaces button.focused:hover {
-  color: #bb9af7;
+  color: {{ $t.magenta }};
 }
 
 #pulseaudio {
@@ -72,7 +74,7 @@ window#waybar {
 #custom-recorder {
   font-size: 18px;
   margin: 2px 7px 0px 7px;
-  color: #ee2e24;
+  color: {{ $t.red }};
 }
 
 #tray,
@@ -95,37 +97,36 @@ window#waybar {
 #custom-media {
   margin: 0px 0px 0px 10px;
   padding: 0 5px;
-  /* border-top: 3px solid rgba(217, 216, 216, 0.5); */
 }
 
 #clock {
   margin: 4px 10px 4px 10px;
   padding: 2px 15px;
   min-width: 140px;
-  color: #bb9af7;
+  color: {{ $t.magenta }};
   border-radius: 5;
   font-family: Roboto;
-  background: #1a1b26;
+  background: {{ $t.background }};
 }
 
 #battery.warning {
-  color: rgba(255, 210, 4, 1);
+  color: {{ $t.yellow }};
 }
 
 #battery.critical {
-  color: rgba(238, 46, 36, 1);
+  color: {{ $t.red }};
 }
 
 #battery.charging {
-  color: rgba(217, 216, 216, 1);
+  color: {{ $t.foreground }};
 }
 
 #custom-storage.warning {
-  color: rgba(255, 210, 4, 1);
+  color: {{ $t.yellow }};
 }
 
 #custom-storage.critical {
-  color: rgba(238, 46, 36, 1);
+  color: {{ $t.red }};
 }
 
 @keyframes blink {

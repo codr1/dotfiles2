@@ -1,5 +1,6 @@
-# Sway config - managed by chezmoi
-# Profile: {{ .profile }} | WM: {{ .wm }} | Host: {{ .hostname }}
+{{- $t := index .themes .theme -}}
+# {{ .wm }} config - managed by chezmoi
+# Profile: {{ .profile }} | WM: {{ .wm }} | Host: {{ .hostname }} | Theme: {{ $t.name }}
 
 ### Variables
 set $mod {{ .modkey }}
@@ -13,15 +14,20 @@ set $menu wofi --show drun
 # Startup
 exec mako
 
+{{- if eq .wm "i3" }}
+# i3: compositor and wallpaper
+exec --no-startup-id picom --config ~/.config/picom/picom.conf -b
+exec --no-startup-id feh --bg-fill /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png
+{{- else if eq .wm "sway" }}
 ### Output configuration
 output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 {{- if ne .scale 1.0 }}
 output * scale {{ .scale }}
 {{- end }}
-
 {{- if .multimonitor }}
 # Multi-monitor: create additional output
 exec swaymsg create_output
+{{- end }}
 {{- end }}
 
 {{- if eq .profile "wsl" }}
@@ -36,12 +42,26 @@ exec systemctl --user restart win-to-clipboard
     bindsym $mod+d exec $menu
 
     # Screenshots
+{{- if eq .wm "i3" }}
+    bindsym $mod+Shift+F3 exec maim ~/Pictures/screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
+    bindsym $mod+Shift+F4 exec maim -s ~/Pictures/screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
+    bindsym Print exec maim | xclip -selection clipboard -t image/png
+{{- else if eq .wm "sway" }}
     bindsym $mod+Shift+F3 exec grim ~/Pictures/screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
     bindsym $mod+Shift+F4 exec grim -g "$(slurp)" ~/Pictures/screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
+    bindsym Print exec grim - | wl-copy
+{{- end }}
 
+{{- if eq .wm "i3" }}
+    floating_modifier $mod
+    bindsym $mod+Shift+c reload
+    bindsym $mod+Shift+r restart
+    bindsym $mod+Shift+e exec i3-nagbar -t warning -m 'Exit i3?' -B 'Yes' 'i3-msg exit'
+{{- else if eq .wm "sway" }}
     floating_modifier $mod normal
     bindsym $mod+Shift+c reload
     bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
+{{- end }}
 
 # Moving around
     bindsym $mod+$left focus left
@@ -116,19 +136,31 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 # Media/brightness keys
+{{- if eq .wm "i3" }}
+    bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+    bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+    bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+    bindsym XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+    bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+    bindsym XF86MonBrightnessUp exec brightnessctl set 5%+
+{{- else if eq .wm "sway" }}
     bindsym --locked XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
     bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
     bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
     bindsym --locked XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
     bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
     bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
-    bindsym Print exec grim
+{{- end }}
 
 # Status Bar
+{{- if eq .wm "i3" }}
+exec_always --no-startup-id ~/.config/polybar/launch.sh
+{{- else if eq .wm "sway" }}
 bar {
     swaybar_command waybar
     position top
 }
+{{- end }}
 
 ### Appearance
 gaps outer 0
@@ -138,10 +170,23 @@ default_border pixel 2
 default_floating_border pixel 2
 hide_edge_borders smart
 
-# Tokyonight colors
-client.focused          #7aa2f7 #7aa2f7 #1a1b26 #7dcfff #7aa2f7
-client.focused_inactive #414868 #414868 #c0caf5 #414868 #414868
-client.unfocused        #24283b #24283b #565f89 #24283b #24283b
-client.urgent           #f7768e #f7768e #1a1b26 #f7768e #f7768e
+# {{ $t.name }} window colors
+client.focused          {{ $t.primary }} {{ $t.primary }} {{ $t.background }} {{ $t.secondary }} {{ $t.primary }}
+client.focused_inactive {{ $t.background_alt }} {{ $t.background_alt }} {{ $t.foreground }} {{ $t.background_alt }} {{ $t.background_alt }}
+client.unfocused        {{ $t.background_alt }} {{ $t.background_alt }} {{ $t.foreground_alt }} {{ $t.background_alt }} {{ $t.background_alt }}
+client.urgent           {{ $t.urgent }} {{ $t.urgent }} {{ $t.background }} {{ $t.urgent }} {{ $t.urgent }}
 
+### Floating window rules
+for_window [class="pavucontrol"] floating enable
+for_window [class="firefox" title="Firefox — Sharing Indicator"] floating enable
+for_window [class="firefox" title="Picture-in-Picture"] floating enable
+for_window [class="firefox" title="About Mozilla Firefox"] floating enable
+for_window [class="gnome-control-center"] floating enable
+for_window [class="gnome-calculator"] floating enable
+for_window [title="Picture-in-picture"] floating enable
+
+{{- if eq .wm "i3" }}
+include /etc/i3/config.d/*
+{{- else if eq .wm "sway" }}
 include /etc/sway/config.d/*
+{{- end }}

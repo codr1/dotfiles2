@@ -30,6 +30,7 @@ Set per-machine in `~/.config/chezmoi/chezmoi.toml`:
 |----------|---------|---------|-------------|
 | `profile` | `wsl`, `vm`, `bare-metal` | auto-detected | Machine type |
 | `wm` | `sway`, `hyprland`, `i3` | `sway` | Window manager |
+| `theme` | see [Themes](#themes) | `tokyonight-night` | Color scheme for all components |
 | `scale` | `1.0`, `1.25`, `1.5`, `2.0` | `1.0` | Display scaling |
 | `multimonitor` | `true`, `false` | `false` | Multi-monitor support |
 | `terminal` | `foot`, `ghostty` | `ghostty` (foot on WSL) | Terminal emulator |
@@ -47,6 +48,7 @@ Set per-machine in `~/.config/chezmoi/chezmoi.toml`:
 [data]
     profile = "wsl"
     wm = "sway"
+    theme = "catppuccin-mocha"
     scale = 1.0
     multimonitor = false
     terminal = "foot"
@@ -61,18 +63,57 @@ Set per-machine in `~/.config/chezmoi/chezmoi.toml`:
     starship_theme = "tokyonight"
 ```
 
+## Themes
+
+All desktop components share a centralized theme system. Change `theme` in your chezmoi config and run `chezmoi apply` to update everything at once.
+
+### Available Themes
+
+| Theme | Description |
+|-------|-------------|
+| `tokyonight-night` | Dark blue theme (default) |
+| `tokyonight-storm` | Slightly lighter TokyoNight variant |
+| `nord` | Arctic, bluish color palette |
+| `catppuccin-mocha` | Warm dark theme with pastel accents |
+| `catppuccin-latte` | Light theme with pastel accents |
+| `dracula` | Dark theme with vibrant colors |
+
+### Themed Components
+
+The following configs use the theme system:
+
+| Component | File | What's themed |
+|-----------|------|---------------|
+| Waybar | `style.css.tmpl` | Bar colors, workspace indicators |
+| Polybar | `config.ini.tmpl` | Bar colors, module accents |
+| Sway/i3 | `config.tmpl` | Window borders (focused, unfocused, urgent) |
+| Mako | `private_config.tmpl` | Notification background, text, borders |
+| Wofi | `style.css.tmpl` | Launcher colors |
+| Swaylock | `config.tmpl` | Lock screen ring and text colors |
+| Foot | `private_foot.ini.tmpl` | References theme by name |
+| Ghostty | `config.tmpl` | References theme by name |
+
+### Terminal Themes
+
+Foot and Ghostty reference themes by name rather than embedding colors:
+- **Foot**: Uses `/usr/share/foot/themes/{theme}` - ensure theme files are installed
+- **Ghostty**: Uses built-in themes - theme names may differ slightly (e.g., `TokyoNight` vs `tokyonight-night`)
+
 ## Managed Configs
 
 | Config | Templated | Notes |
 |--------|-----------|-------|
-| `foot/foot.ini` | No | Terminal |
-| `ghostty/config` | No | Terminal |
-| `mako/config` | No | Notifications |
+| `foot/foot.ini` | Yes | Terminal - theme reference |
+| `ghostty/config` | Yes | Terminal - theme reference |
+| `mako/config` | Yes | Notifications - themed |
+| `picom/picom.conf` | No | X11 compositor (i3 only) |
+| `polybar/*` | Yes | Status bar for i3 - themed |
 | `starship/starship.toml` | Yes | Shell prompt - languages, time, hostname, icons |
-| `sway/config` | Yes | WM - terminal, modkey, clipboard, scale |
-| `waybar/config` | Yes | Status bar - battery/backlight per profile |
-| `waybar/style.css` | No | TokyoNight theme |
-| `wofi/*` | No | App launcher + power menu |
+| `sway/config` | Yes | WM config for sway and i3 - themed borders |
+| `swaylock/config` | Yes | Lock screen - themed (bare-metal only) |
+| `waybar/config` | Yes | Status bar for sway - battery/backlight per profile |
+| `waybar/style.css` | Yes | Status bar - themed |
+| `wofi/*` | Yes | App launcher + power menu - themed |
 
 ## Profile Differences
 
@@ -83,6 +124,40 @@ Set per-machine in `~/.config/chezmoi/chezmoi.toml`:
 | Clipboard sync | Yes | No | No |
 | Battery module | No | No | Yes |
 | Backlight module | No | No | Yes |
+| Swaylock | No | No | Yes |
+
+## Window Manager Support
+
+The `sway/config` file serves both **sway** (Wayland) and **i3** (X11) using chezmoi conditionals. They share ~95% of the same syntax.
+
+### sway vs i3 Differences
+
+| Feature | sway | i3 |
+|---------|------|-----|
+| Compositor | Built-in | picom (auto-started) |
+| Wallpaper | `output * bg` | feh |
+| Screenshots | grim/slurp | maim/xclip |
+| Lock modifier | `--locked` flag | (none) |
+| Status bar | waybar | polybar |
+| Exit dialog | swaynag | i3-nagbar |
+
+### i3-specific files
+
+When `wm = "i3"`, these additional configs are deployed:
+- `picom/picom.conf` - X11 compositor with rounded corners, opacity, blur
+- `polybar/config.ini` - Status bar with themed colors
+- `polybar/launch.sh` - Multi-monitor polybar launcher
+
+### Floating Window Rules
+
+Both sway and i3 configs include floating rules for:
+- `pavucontrol` - Audio control
+- Firefox popups (Sharing Indicator, Picture-in-Picture, About dialog)
+- GNOME Control Center
+- GNOME Calculator
+- Generic Picture-in-Picture windows
+
+Hyprland requires a separate config (different syntax entirely) - not yet implemented.
 
 ## Starship Prompt Configuration
 
@@ -162,9 +237,32 @@ wsl-specific-setting = true
 ## Dependencies
 
 ```bash
-# Arch
-pacman -S sway waybar wofi foot mako grim slurp wl-clipboard starship
+# Arch - sway (Wayland)
+pacman -S sway waybar wofi foot mako grim slurp wl-clipboard swaylock starship
+
+# Arch - i3 (X11)
+pacman -S i3 polybar wofi foot mako maim xclip picom feh starship
+
+# Fedora - sway (Wayland)
+dnf install sway waybar wofi foot mako grim slurp wl-clipboard swaylock starship
+
+# Fedora - i3 (X11)
+dnf install i3 polybar wofi foot mako maim xclip picom feh starship
 
 # Or install starship via curl
 curl -sS https://starship.rs/install.sh | sh
 ```
+
+### Fonts
+
+Polybar and Waybar use icon fonts for status indicators:
+
+```bash
+# Arch
+pacman -S ttf-font-awesome ttf-jetbrains-mono-nerd
+
+# Fedora
+dnf install fontawesome-fonts jetbrains-mono-fonts
+```
+
+Without these fonts, icons will render as boxes.

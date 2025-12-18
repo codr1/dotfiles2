@@ -6,3 +6,16 @@ README.md
 .config/swaylock
 .config/swaylock/config
 {{ end }}
+
+# Ignore picom on non-i3 (sway has built-in compositor)
+{{ if ne .wm "i3" }}
+.config/picom
+.config/picom/picom.conf
+{{ end }}
+
+# Ignore polybar on non-i3 (sway uses waybar)
+{{ if ne .wm "i3" }}
+.config/polybar
+.config/polybar/config.ini
+.config/polybar/launch.sh
+{{ end }}

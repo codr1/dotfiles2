@@ -1,0 +1,37 @@
+{{- $t := index .themes .theme -}}
+# {{ $t.name }} theme for swaylock - managed by chezmoi
+
+ignore-empty-password
+show-failed-attempts
+daemonize
+
+color={{ trimPrefix "#" $t.background }}
+
+bs-hl-color={{ trimPrefix "#" $t.red }}
+caps-lock-bs-hl-color={{ trimPrefix "#" $t.red }}
+caps-lock-key-hl-color={{ trimPrefix "#" $t.green }}
+inside-color={{ trimPrefix "#" $t.background }}00
+inside-clear-color={{ trimPrefix "#" $t.background }}00
+inside-caps-lock-color={{ trimPrefix "#" $t.background }}00
+inside-ver-color={{ trimPrefix "#" $t.background }}00
+inside-wrong-color={{ trimPrefix "#" $t.background }}00
+key-hl-color={{ trimPrefix "#" $t.green }}
+layout-bg-color={{ trimPrefix "#" $t.background }}00
+layout-border-color={{ trimPrefix "#" $t.primary }}00
+layout-text-color={{ trimPrefix "#" $t.foreground }}
+line-color=00000000
+line-clear-color=00000000
+line-caps-lock-color=00000000
+line-ver-color=00000000
+line-wrong-color=00000000
+ring-color={{ trimPrefix "#" $t.background_alt }}
+ring-clear-color={{ trimPrefix "#" $t.yellow }}
+ring-caps-lock-color={{ trimPrefix "#" $t.yellow }}
+ring-ver-color={{ trimPrefix "#" $t.primary }}
+ring-wrong-color={{ trimPrefix "#" $t.red }}
+separator-color=00000000
+text-color={{ trimPrefix "#" $t.foreground }}
+text-clear-color={{ trimPrefix "#" $t.foreground }}
+text-caps-lock-color={{ trimPrefix "#" $t.foreground }}
+text-ver-color={{ trimPrefix "#" $t.foreground }}
+text-wrong-color={{ trimPrefix "#" $t.foreground }}

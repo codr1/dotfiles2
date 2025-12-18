@@ -1,5 +1,7 @@
-# Foot Terminal Configuration
-include=/usr/share/foot/themes/tokyonight-night
+{{- $t := index .themes .theme -}}
+# Foot Terminal Configuration - managed by chezmoi
+# Theme: {{ $t.name }}
+include=/usr/share/foot/themes/{{ $t.terminal_theme }}
 
 [main]
 font=JetBrains Mono:size=12

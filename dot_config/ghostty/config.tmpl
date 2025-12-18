@@ -1,0 +1,10 @@
+{{- $t := index .themes .theme -}}
+# Ghostty Terminal Configuration - managed by chezmoi
+# Theme: {{ $t.name }}
+
+font-family = "JetBrains Mono"
+font-size = 12
+
+theme = "{{ $t.ghostty_theme }}"
+background-opacity = 0.95
+keybind = shift+enter=text:\x1b\r

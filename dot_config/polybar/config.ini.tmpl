@@ -1,0 +1,187 @@
+{{- $t := index .themes .theme -}}
+; {{ $t.name }} theme for polybar - managed by chezmoi
+
+;; ==========================================================
+;; Colors
+;; ==========================================================
+
+[color]
+background = {{ $t.background }}
+background-alt = {{ $t.background_alt }}
+foreground = {{ $t.foreground }}
+foreground-alt = {{ $t.foreground_alt }}
+primary = {{ $t.primary }}
+secondary = {{ $t.secondary }}
+red = {{ $t.red }}
+green = {{ $t.green }}
+yellow = {{ $t.yellow }}
+blue = {{ $t.blue }}
+magenta = {{ $t.magenta }}
+cyan = {{ $t.cyan }}
+orange = {{ $t.orange }}
+urgent = {{ $t.urgent }}
+
+;; ==========================================================
+;; Bar Configuration
+;; ==========================================================
+
+[bar/main]
+monitor = ${env:MONITOR:}
+width = 100%
+height = 40
+fixed-center = true
+bottom = false
+
+background = ${color.background}
+foreground = ${color.foreground}
+
+padding = 2
+module-margin = 1
+
+font-0 = "JetBrains Mono:size=11;3"
+font-1 = "Font Awesome 6 Free Solid:size=11;3"
+font-2 = "Font Awesome 6 Brands:size=11;3"
+
+modules-left = i3 xwindow
+modules-center = date
+modules-right = pulseaudio cpu memory temperature network powermenu
+
+tray-position = right
+tray-padding = 2
+tray-background = ${color.background}
+
+cursor-click = pointer
+
+enable-ipc = true
+
+;; ==========================================================
+;; Modules
+;; ==========================================================
+
+[module/i3]
+type = internal/i3
+pin-workspaces = true
+strip-wsnumbers = true
+index-sort = true
+enable-click = true
+enable-scroll = true
+
+format = <label-state> <label-mode>
+
+label-mode = %mode%
+label-mode-padding = 2
+label-mode-background = ${color.primary}
+label-mode-foreground = ${color.background}
+
+label-focused = %index%
+label-focused-foreground = ${color.primary}
+label-focused-background = ${color.background-alt}
+label-focused-underline = ${color.primary}
+label-focused-padding = 2
+
+label-unfocused = %index%
+label-unfocused-padding = 2
+label-unfocused-foreground = ${color.foreground-alt}
+
+label-visible = %index%
+label-visible-padding = 2
+
+label-urgent = %index%
+label-urgent-foreground = ${color.background}
+label-urgent-background = ${color.urgent}
+label-urgent-padding = 2
+
+[module/xwindow]
+type = internal/xwindow
+label = %title:0:60:...%
+label-foreground = ${color.foreground-alt}
+
+[module/date]
+type = internal/date
+interval = 1
+date = %a %d %b
+time = %H:%M
+label =  %date%   %time%
+label-foreground = ${color.magenta}
+
+[module/cpu]
+type = internal/cpu
+interval = 2
+format-prefix = " "
+format-prefix-foreground = ${color.primary}
+label = %percentage:2%%
+
+[module/memory]
+type = internal/memory
+interval = 2
+format-prefix = " "
+format-prefix-foreground = ${color.primary}
+label = %percentage_used%%
+
+[module/temperature]
+type = internal/temperature
+interval = 2
+; thermal-zone auto-detected, override with hwmon-path if needed
+warn-temperature = 70
+
+format = <ramp> <label>
+format-warn = <ramp> <label-warn>
+
+label = %temperature-c%
+label-warn = %temperature-c%
+label-warn-foreground = ${color.red}
+
+ramp-0 =
+ramp-1 =
+ramp-2 =
+ramp-foreground = ${color.primary}
+
+[module/network]
+type = internal/network
+{{- if eq .profile "bare-metal" }}
+interface-type = wireless
+{{- else }}
+interface-type = wired
+{{- end }}
+interval = 3
+
+format-connected = <label-connected>
+format-disconnected = <label-disconnected>
+
+label-connected =  %local_ip%
+label-connected-foreground = ${color.foreground}
+label-disconnected =  disconnected
+label-disconnected-foreground = ${color.foreground-alt}
+
+[module/pulseaudio]
+type = internal/pulseaudio
+use-ui-max = true
+interval = 5
+
+format-volume = <ramp-volume> <label-volume>
+label-volume = %percentage%%
+
+format-muted = <label-muted>
+label-muted =  muted
+label-muted-foreground = ${color.foreground-alt}
+
+ramp-volume-0 =
+ramp-volume-1 =
+ramp-volume-2 =
+ramp-volume-foreground = ${color.primary}
+
+click-right = pavucontrol
+
+[module/powermenu]
+type = custom/text
+content =
+content-foreground = ${color.red}
+click-left = ~/.config/wofi/wofi-power.sh
+
+;; ==========================================================
+;; Settings
+;; ==========================================================
+
+[settings]
+screenchange-reload = true
+pseudo-transparency = false
