@@ -16,15 +16,17 @@
 {{- $starship_show_icons := true -}}
 {{- $starship_theme := "tokyonight" -}}
 
-{{/* Auto-detect profile */}}
+{{/* Auto-detect profile and set defaults */}}
 {{- if env "WSL_DISTRO_NAME" -}}
 {{-   $profile = "wsl" -}}
+{{-   $wm = "sway" -}}
 {{-   $terminal = "foot" -}}
 {{-   $modkey = "Mod1" -}}
 {{- else if stat "/sys/class/dmi/id/product_name" -}}
 {{-   $productName := output "cat" "/sys/class/dmi/id/product_name" | trim -}}
 {{-   if or (contains "VMware" $productName) (contains "VirtualBox" $productName) (contains "QEMU" $productName) -}}
 {{-     $profile = "vm" -}}
+{{-     $wm = "i3" -}}
 {{-   end -}}
 {{- end -}}
 
@@ -39,8 +41,8 @@
 {{-     $terminal = "foot" -}}
 {{-   else -}}
 {{-     $terminal = promptStringOnce . "terminal" "Terminal (foot/ghostty)" $terminal -}}
-{{-   end -}}
-{{- end -}}
+{{-   end }}
+{{- end }}
 
 [data]
     profile = {{ $profile | quote }}
