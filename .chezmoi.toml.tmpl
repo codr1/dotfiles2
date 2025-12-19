@@ -65,8 +65,23 @@
 # Each theme defines colors for the entire desktop environment.
 # Terminal themes are referenced by name (terminals have their own theme files).
 
+# =============================================================================
+# Wallpapers
+# =============================================================================
+# Stored in ~/.local/share/wallpapers/, referenced by filename
+
+[data.wallpapers]
+    [data.wallpapers.cafe-at-night]
+        name = "Cafe at Night"
+        file = "cafe-at-night_00_3840x2160.png"
+    [data.wallpapers.tokyonight-lockscreen]
+        name = "TokyoNight Lockscreen"
+        file = "lockscreen_00_3840x2160.png"
+
 [data.themes.tokyonight-night]
     name = "TokyoNight Night"
+    wallpaper = "cafe-at-night"
+    lockscreen = "tokyonight-lockscreen"
     terminal_theme = "tokyonight-night"     # foot: /usr/share/foot/themes/
     ghostty_theme = "TokyoNight"            # ghostty theme name
     background = "#1a1b26"
@@ -87,6 +102,8 @@
 
 [data.themes.tokyonight-storm]
     name = "TokyoNight Storm"
+    wallpaper = "cafe-at-night"
+    lockscreen = "tokyonight-lockscreen"
     terminal_theme = "tokyonight-storm"
     ghostty_theme = "TokyoNight"
     background = "#24283b"
@@ -107,6 +124,8 @@
 
 [data.themes.nord]
     name = "Nord"
+    wallpaper = "cafe-at-night"
+    lockscreen = "tokyonight-lockscreen"
     terminal_theme = "nord"
     ghostty_theme = "nord"
     background = "#2e3440"
@@ -127,6 +146,8 @@
 
 [data.themes.catppuccin-mocha]
     name = "Catppuccin Mocha"
+    wallpaper = "cafe-at-night"
+    lockscreen = "tokyonight-lockscreen"
     terminal_theme = "catppuccin-mocha"
     ghostty_theme = "catppuccin-mocha"
     background = "#1e1e2e"
@@ -147,6 +168,8 @@
 
 [data.themes.catppuccin-latte]
     name = "Catppuccin Latte"
+    wallpaper = "cafe-at-night"
+    lockscreen = "tokyonight-lockscreen"
     terminal_theme = "catppuccin-latte"
     ghostty_theme = "catppuccin-latte"
     background = "#eff1f5"
@@ -167,6 +190,8 @@
 
 [data.themes.dracula]
     name = "Dracula"
+    wallpaper = "cafe-at-night"
+    lockscreen = "tokyonight-lockscreen"
     terminal_theme = "dracula"
     ghostty_theme = "Dracula"
     background = "#282a36"

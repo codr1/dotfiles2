@@ -1,4 +1,5 @@
 {{- $t := index .themes .theme -}}
+{{- $wp := index .wallpapers $t.wallpaper -}}
 # {{ .wm }} config - managed by chezmoi
 # Profile: {{ .profile }} | WM: {{ .wm }} | Host: {{ .hostname }} | Theme: {{ $t.name }}
 
@@ -17,10 +18,10 @@ exec mako
 {{- if eq .wm "i3" }}
 # i3: compositor and wallpaper
 exec --no-startup-id picom --config ~/.config/picom/picom.conf -b
-exec --no-startup-id feh --bg-fill /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png
+exec --no-startup-id feh --bg-fill ~/.local/share/wallpapers/{{ $wp.file }}
 {{- else if eq .wm "sway" }}
 ### Output configuration
-output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
+output * bg ~/.local/share/wallpapers/{{ $wp.file }} fill
 {{- if ne .scale 1.0 }}
 output * scale {{ .scale }}
 {{- end }}

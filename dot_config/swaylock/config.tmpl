@@ -1,11 +1,12 @@
 {{- $t := index .themes .theme -}}
+{{- $ls := index .wallpapers $t.lockscreen -}}
 # {{ $t.name }} theme for swaylock - managed by chezmoi
 
 ignore-empty-password
 show-failed-attempts
 daemonize
 
-color={{ trimPrefix "#" $t.background }}
+image=~/.local/share/wallpapers/{{ $ls.file }}
 
 bs-hl-color={{ trimPrefix "#" $t.red }}
 caps-lock-bs-hl-color={{ trimPrefix "#" $t.red }}
