@@ -10,7 +10,11 @@ set $down j
 set $up k
 set $right l
 set $term {{ .terminal }}
+{{- if eq .wm "i3" }}
+set $menu rofi -show drun
+{{- else }}
 set $menu wofi --show drun
+{{- end }}
 
 # Startup
 exec mako
@@ -19,6 +23,12 @@ exec mako
 # i3: compositor and wallpaper
 exec --no-startup-id picom --config ~/.config/picom/picom.conf -b
 exec --no-startup-id feh --bg-fill ~/.local/share/wallpapers/{{ $wp.file }}
+{{- if eq .profile "vm" }}
+# VM: disable screen lock and power management
+exec --no-startup-id xset s off
+exec --no-startup-id xset -dpms
+exec --no-startup-id xset s noblank
+{{- end }}
 {{- else if eq .wm "sway" }}
 ### Output configuration
 output * bg ~/.local/share/wallpapers/{{ $wp.file }} fill
@@ -164,8 +174,11 @@ bar {
 {{- end }}
 
 ### Appearance
-gaps outer 0
-gaps inner 6
+gaps inner 5
+gaps outer 2
+gaps top 2
+gaps bottom 2
+smart_gaps on
 
 default_border pixel 2
 default_floating_border pixel 2

@@ -19,3 +19,9 @@ README.md
 .config/polybar/config.ini
 .config/polybar/launch.sh
 {{ end }}
+
+# Ignore rofi on non-i3 (sway uses wofi)
+{{ if ne .wm "i3" }}
+.config/rofi
+.config/rofi/config.rasi
+{{ end }}
