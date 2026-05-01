@@ -8,10 +8,10 @@ Cross-machine dotfiles managed with [chezmoi](https://www.chezmoi.io/). Supports
 
 ```bash
 # Install chezmoi and apply dotfiles in one command
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply codr1
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply codr1/dotfiles2
 
 # Or if chezmoi is already installed
-chezmoi init --apply codr1
+chezmoi init --apply codr1/dotfiles2
 ```
 
 On first run, chezmoi will auto-detect your environment (WSL/VM/bare-metal) and prompt for confirmation.
@@ -114,6 +114,19 @@ Foot and Ghostty reference themes by name rather than embedding colors:
 | `waybar/config` | Yes | Status bar for sway - battery/backlight per profile |
 | `waybar/style.css` | Yes | Status bar - themed |
 | `wofi/*` | Yes | App launcher + power menu - themed |
+| `bashrc.d/dotfiles2.sh` | No | Sourced from `~/.bashrc` — adds `~/.local/bin` to PATH, inits starship |
+| `local/bin/start-sway` | No | sway launcher (WSL only) |
+| `local/bin/setup-sway-wsl` | No | One-time host setup helper (WSL only) |
+| `local/bin/clipboard-to-win` | No | wl-paste → clip.exe (WSL only) |
+| `local/bin/win-to-clipboard` | No | Windows clipboard → wl-copy (WSL only) |
+| `systemd/user/win-to-clipboard.service` | No | Runs win-to-clipboard (WSL only) |
+
+### Shell integration
+
+`~/.bashrc` is **not** taken over. Instead, a one-time `run_once_after_*` script
+appends a small block to it (idempotent, marker-guarded) that sources every
+`~/.bashrc.d/*.sh`. chezmoi manages `~/.bashrc.d/dotfiles2.sh`; you keep your
+own `.bashrc` and can drop additional files into `~/.bashrc.d/` at will.
 
 ## Profile Differences
 
@@ -125,6 +138,59 @@ Foot and Ghostty reference themes by name rather than embedding colors:
 | Battery module | No | No | Yes |
 | Backlight module | No | No | Yes |
 | Swaylock | No | No | Yes |
+
+## WSL Setup
+
+When `profile = "wsl"` is detected, chezmoi deploys a small bootstrap toolkit
+under `~/.local/bin/` that handles the rough edges of running sway under WSL2 +
+WSLg (broken `/tmp/.X11-unix` sticky bit, missing user systemd, clipboard sync).
+
+### One-time host setup
+
+After the first `chezmoi apply`, run:
+
+```bash
+sudo ~/.local/bin/setup-sway-wsl
+```
+
+This does two things, both of which legitimately require root:
+
+1. **Enables systemd lingering** (`loginctl enable-linger $USER`) so the user
+   systemd manager starts at WSL boot, not at sway launch.
+2. **Installs a tightly-scoped NOPASSWD sudoers entry** at
+   `/etc/sudoers.d/sway-wsl-$USER` covering exactly two commands —
+   `umount /tmp/.X11-unix` and `rm -rf /tmp/.X11-unix` — so subsequent
+   `start-sway` runs don't prompt.
+
+Idempotent — safe to re-run.
+
+### Launching sway
+
+```bash
+start-sway
+```
+
+`~/.local/bin/start-sway` sets the right XDG environment, kicks user systemd
+if needed, resets `/tmp/.X11-unix` so XWayland will start, and symlinks WSLg's
+Wayland socket. Then `exec sway`.
+
+### Why the X11 dance is needed
+
+WSLg bind-mounts `/tmp/.X11-unix` from the Windows side without the sticky bit.
+xorg-server's `_XSERVTransUNIXCreateListener` refuses to use the directory
+without it (multi-user security check), so XWayland fails to start. Microsoft
+has had a fix in PRs since 2023 ([wslg#1137](https://github.com/microsoft/wslg/pull/1137),
+[wslg#1422](https://github.com/microsoft/wslg/pull/1422)); not yet merged.
+Until it is, `start-sway` reconstructs the directory at launch.
+
+### Clipboard sync
+
+`win-to-clipboard.service` (systemd user unit) watches the Windows clipboard
+via a single persistent PowerShell process and pushes changes to wl-copy when
+a sway window is focused. The reverse direction is wired via `wl-paste --watch`
+calling `clipboard-to-win`, which forwards to `clip.exe`. Sentinel files in
+`/tmp` break the copy loop. This works once user systemd is up — i.e., once
+you've run `setup-sway-wsl`.
 
 ## Window Manager Support
 
@@ -238,13 +304,13 @@ wsl-specific-setting = true
 
 ```bash
 # Arch - sway (Wayland)
-pacman -S sway waybar wofi foot mako grim slurp wl-clipboard swaylock starship
+pacman -S sway swaybg waybar wofi foot mako grim slurp wl-clipboard swaylock starship xorg-xwayland
 
 # Arch - i3 (X11)
 pacman -S i3 polybar wofi foot mako maim xclip picom feh starship
 
 # Fedora - sway (Wayland)
-dnf install sway waybar wofi foot mako grim slurp wl-clipboard swaylock starship
+dnf install sway swaybg waybar wofi foot mako grim slurp wl-clipboard swaylock starship xorg-x11-server-Xwayland
 
 # Fedora - i3 (X11)
 dnf install i3 polybar wofi foot mako maim xclip picom feh starship
@@ -252,6 +318,8 @@ dnf install i3 polybar wofi foot mako maim xclip picom feh starship
 # Or install starship via curl
 curl -sS https://starship.rs/install.sh | sh
 ```
+
+`swaybg` is what sway shells out to for the wallpaper — without it, `output * bg ...` silently fails. `xorg-xwayland` enables X11 apps to run inside sway; skip it only if you exclusively use Wayland-native apps.
 
 ### Fonts
 
@@ -266,3 +334,11 @@ dnf install fontawesome-fonts jetbrains-mono-fonts
 ```
 
 Without these fonts, icons will render as boxes.
+
+## Attribution
+
+The WSL clipboard-sync scripts and the structural skeleton of `start-sway`
+(systemd kickstart, `/tmp/.X11-unix` reset, WSLg socket linkage) are vendored
+from [jordankoehn/sway-wsl2](https://github.com/jordankoehn/sway-wsl2) (MIT).
+Thanks. Local additions: NOPASSWD-sudoers helper, toolkit env vars,
+`exec sway`, idempotent host-setup script.
