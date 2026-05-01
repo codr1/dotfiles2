@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+#
+# setup-locale — generate locales and (optionally) set the system LANG.
+# Distro-aware: handles Arch, Debian/Ubuntu, and Fedora/RHEL families.
+#
+# Reads `locales` and `system_locale` from chezmoi data — override per-machine
+# in ~/.config/chezmoi/chezmoi.toml:
+#
+#   [data]
+#       locales = ["en_US.UTF-8 UTF-8", "ja_JP.UTF-8 UTF-8"]
+#       system_locale = "en_US.UTF-8"   # set "" to skip writing /etc/locale.conf
+#
+# Usage:  sudo ~/.local/bin/setup-locale
+# Idempotent — safe to re-run.
+#
+# Why this exists: WSL distros ship with no locales generated and the user's
+# inherited LANG (e.g. en_US.UTF-8 from Windows) immediately fails. Bare-metal
+# installers usually handle locale during install; this script lets dotfiles2
+# fix it everywhere with one consistent invocation.
+
+set -euo pipefail
+
+if [[ $EUID -ne 0 ]]; then
+  exec sudo -E "$0" "$@"
+fi
+
+# Baked from chezmoi data
+LOCALES=({{ range .locales }}{{ . | quote }} {{ end }})
+SYSTEM_LOCALE={{ .system_locale | quote }}
+DISTRO_ID={{ (index .chezmoi.osRelease "id")     | default "unknown" | quote }}
+DISTRO_LIKE={{ (index .chezmoi.osRelease "idLike") | default "" | quote }}
+
+if [[ ${#LOCALES[@]} -eq 0 ]]; then
+  echo "ERROR: no locales configured. Set [data].locales in chezmoi.toml." >&2
+  exit 1
+fi
+
+# Classify distro into a family. Match primary id first, fall back to ID_LIKE
+# (handles Pop!_OS, EndeavourOS, Rocky, etc. without enumerating every spinoff).
+family=
+case "$DISTRO_ID" in
+  arch|manjaro|endeavouros|cachyos|garuda|artix)        family=arch ;;
+  debian|ubuntu|linuxmint|pop|kali|raspbian|elementary) family=debian ;;
+  fedora|rhel|centos|rocky|almalinux|nobara)            family=fedora ;;
+esac
+if [[ -z "$family" ]]; then
+  case "$DISTRO_LIKE" in
+    *arch*)            family=arch ;;
+    *debian*|*ubuntu*) family=debian ;;
+    *fedora*|*rhel*)   family=fedora ;;
+  esac
+fi
+if [[ -z "$family" ]]; then
+  echo "ERROR: unsupported distro id='$DISTRO_ID' idLike='$DISTRO_LIKE'." >&2
+  echo "Install your locales manually, or add a case to setup-locale." >&2
+  exit 1
+fi
+
+echo "Distro family: $family ($DISTRO_ID)"
+echo "Locales:       ${LOCALES[*]}"
+[[ -n "$SYSTEM_LOCALE" ]] && echo "System LANG:   $SYSTEM_LOCALE"
+echo
+
+# --- Generate locales ---------------------------------------------------------
+
+ensure_locale_gen_line() {
+  # Uncomment the matching line in /etc/locale.gen, or append it if missing.
+  local entry=$1
+  # Escape regex metacharacters in the locale entry for sed
+  local esc
+  esc=$(printf '%s' "$entry" | sed 's/[].[\^$*\/]/\\&/g')
+  if grep -qE "^${esc}\$" /etc/locale.gen; then
+    return 0  # already uncommented
+  fi
+  if grep -qE "^#[[:space:]]*${esc}\$" /etc/locale.gen; then
+    sed -i "s/^#[[:space:]]*${esc}\$/${entry}/" /etc/locale.gen
+  else
+    echo "$entry" >> /etc/locale.gen
+  fi
+}
+
+case "$family" in
+  arch)
+    for loc in "${LOCALES[@]}"; do ensure_locale_gen_line "$loc"; done
+    locale-gen
+    ;;
+
+  debian)
+    # The `locales` package isn't always pre-installed.
+    if ! command -v locale-gen >/dev/null 2>&1; then
+      apt-get update
+      apt-get install -y locales
+    fi
+    for loc in "${LOCALES[@]}"; do ensure_locale_gen_line "$loc"; done
+    locale-gen
+    ;;
+
+  fedora)
+    # Fedora doesn't use locale.gen — it ships per-language glibc-langpack-*.
+    declare -A seen=()
+    for loc in "${LOCALES[@]}"; do
+      lang=${loc%%_*}            # "en_US.UTF-8 UTF-8" -> "en"
+      [[ -n "${seen[$lang]:-}" ]] && continue
+      seen[$lang]=1
+      dnf install -y "glibc-langpack-${lang}"
+    done
+    ;;
+esac
+
+# --- Set system LANG ----------------------------------------------------------
+
+if [[ -n "$SYSTEM_LOCALE" ]]; then
+  case "$family" in
+    arch|fedora)
+      echo "LANG=${SYSTEM_LOCALE}" > /etc/locale.conf
+      echo "Wrote /etc/locale.conf"
+      ;;
+    debian)
+      # Debian convention is /etc/default/locale via update-locale
+      update-locale "LANG=${SYSTEM_LOCALE}"
+      echo "Updated /etc/default/locale"
+      ;;
+  esac
+fi
+
+echo
+echo "Done. Open a new shell to pick up the new locale."

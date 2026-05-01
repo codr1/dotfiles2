@@ -40,6 +40,8 @@ Set per-machine in `~/.config/chezmoi/chezmoi.toml`:
 | `starship_hostname_mode` | `always`, `ssh-only`, `never` | `always` | When to show hostname |
 | `starship_show_icons` | `true`, `false` | `true` | Show directory icons |
 | `starship_theme` | `tokyonight` | `tokyonight` | Prompt color scheme |
+| `locales` | list of `locale.gen` lines | `["en_US.UTF-8 UTF-8"]` | Locales to generate (consumed by `setup-locale`) |
+| `system_locale` | locale name | `"en_US.UTF-8"` | System `LANG` written to `/etc/locale.conf`; empty = skip |
 
 ### Example
 
@@ -115,6 +117,7 @@ Foot and Ghostty reference themes by name rather than embedding colors:
 | `waybar/style.css` | Yes | Status bar - themed |
 | `wofi/*` | Yes | App launcher + power menu - themed |
 | `bashrc.d/dotfiles2.sh` | No | Sourced from `~/.bashrc` — adds `~/.local/bin` to PATH, inits starship |
+| `local/bin/setup-locale` | Yes | Distro-aware locale generator (Arch/Debian/Fedora) |
 | `local/bin/start-sway` | No | sway launcher (WSL only) |
 | `local/bin/setup-sway-wsl` | No | One-time host setup helper (WSL only) |
 | `local/bin/clipboard-to-win` | No | wl-paste → clip.exe (WSL only) |
@@ -191,6 +194,38 @@ a sway window is focused. The reverse direction is wired via `wl-paste --watch`
 calling `clipboard-to-win`, which forwards to `clip.exe`. Sentinel files in
 `/tmp` break the copy loop. This works once user systemd is up — i.e., once
 you've run `setup-sway-wsl`.
+
+## Locale Setup
+
+Bare-metal installers usually configure the locale during install, but **WSL
+distros ship with no locales generated**, and the inherited `LANG` from
+Windows immediately breaks (e.g. `en_US.UTF-8` is not generated → C locale
+fallback → GTK warnings everywhere).
+
+`~/.local/bin/setup-locale` fixes this in a distro-aware way (Arch, Debian/
+Ubuntu, Fedora/RHEL). It reads the `locales` and `system_locale` data fields
+from your chezmoi config:
+
+```bash
+sudo ~/.local/bin/setup-locale
+```
+
+| Family | What it does |
+|--------|--------------|
+| Arch (incl. Manjaro, EndeavourOS, CachyOS, Garuda, Artix) | Uncomments lines in `/etc/locale.gen`, runs `locale-gen`, writes `/etc/locale.conf` |
+| Debian (incl. Ubuntu, Mint, Pop, Kali, Raspbian) | Installs `locales` package if needed, then same as Arch but uses `update-locale` for `/etc/default/locale` |
+| Fedora (incl. RHEL, CentOS, Rocky, AlmaLinux, Nobara) | `dnf install glibc-langpack-<lang>` for each locale, writes `/etc/locale.conf` |
+
+Override per-machine in `~/.config/chezmoi/chezmoi.toml`:
+
+```toml
+[data]
+    locales = ["en_US.UTF-8 UTF-8", "ja_JP.UTF-8 UTF-8"]
+    system_locale = "ja_JP.UTF-8"
+```
+
+Idempotent — safe to re-run. Bare-metal users who already have their locale
+set up can skip it entirely.
 
 ## Window Manager Support
 

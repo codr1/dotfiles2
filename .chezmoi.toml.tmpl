@@ -16,6 +16,14 @@
 {{- $starship_show_icons := true -}}
 {{- $starship_theme := "tokyonight" -}}
 
+{{/* Locale defaults — override per-machine in ~/.config/chezmoi/chezmoi.toml.
+     Format matches /etc/locale.gen lines on Arch/Debian (locale + encoding).
+     setup-locale parses the language code (e.g. "en") for Fedora's
+     glibc-langpack approach. system_locale is what goes in /etc/locale.conf;
+     leave empty to skip writing. */}}
+{{- $locales := list "en_US.UTF-8 UTF-8" -}}
+{{- $system_locale := "en_US.UTF-8" -}}
+
 {{/* Auto-detect profile and set defaults */}}
 {{- if env "WSL_DISTRO_NAME" -}}
 {{-   $profile = "wsl" -}}
@@ -60,6 +68,10 @@
     starship_hostname_mode = {{ $starship_hostname_mode | quote }}
     starship_show_icons = {{ $starship_show_icons }}
     starship_theme = {{ $starship_theme | quote }}
+
+    # Locale (consumed by ~/.local/bin/setup-locale)
+    locales = {{ $locales | toJson }}
+    system_locale = {{ $system_locale | quote }}
 
 # =============================================================================
 # Theme Definitions
