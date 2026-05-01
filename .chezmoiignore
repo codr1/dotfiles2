@@ -25,3 +25,12 @@ README.md
 .config/rofi
 .config/rofi/config.rasi
 {{ end }}
+
+# WSL-only: clipboard sync scripts, sway launcher, host-setup helper, systemd unit
+{{ if ne .profile "wsl" }}
+.local/bin/start-sway
+.local/bin/clipboard-to-win
+.local/bin/win-to-clipboard
+.local/bin/setup-sway-wsl
+.config/systemd/user/win-to-clipboard.service
+{{ end }}

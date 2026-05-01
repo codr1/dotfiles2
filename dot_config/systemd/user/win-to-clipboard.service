@@ -1,0 +1,16 @@
+# Vendored from https://github.com/jordankoehn/sway-wsl2 (MIT)
+# Local additions: After=, Restart=, [Install] section so the unit can be
+# `systemctl --user enable`'d and self-heals if the PowerShell loop dies.
+
+[Unit]
+Description=Sync Windows clipboard to Wayland (WSL)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=%h/.local/bin/win-to-clipboard
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

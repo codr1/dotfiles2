@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+#
+# setup-sway-wsl — one-time WSL host setup so start-sway runs without prompts.
+#
+# Does two things, both of which legitimately need root:
+#   1. Enables systemd user lingering so user@.service starts at WSL boot
+#      (eliminates start-sway's `sudo systemctl restart user@$UID` step).
+#   2. Installs a tightly-scoped NOPASSWD sudoers entry covering only the
+#      umount + rm commands start-sway needs to reset /tmp/.X11-unix.
+#
+# Usage:  sudo ~/.local/bin/setup-sway-wsl
+# Idempotent — safe to re-run.
+#
+# Why this is needed: WSLg bind-mounts /tmp/.X11-unix from the Windows side
+# without the sticky bit, and Xorg/Xwayland refuses to use the directory
+# without it. The microsoft/wslg upstream fix has been pending in PRs since
+# 2023 (#1137, #1422). Until that lands, we reset the directory at sway start.
+
+set -euo pipefail
+
+if [[ $EUID -ne 0 ]]; then
+  exec sudo -E "$0" "$@"
+fi
+
+USER_NAME=${SUDO_USER:-$USER}
+if [[ -z "$USER_NAME" || "$USER_NAME" == "root" ]]; then
+  echo "ERROR: refusing to install sudoers for root. Run as a normal user with sudo." >&2
+  exit 1
+fi
+
+SUDOERS_FILE=/etc/sudoers.d/sway-wsl-${USER_NAME}
+
+echo "[1/2] Enabling systemd lingering for ${USER_NAME}..."
+loginctl enable-linger "$USER_NAME"
+
+echo "[2/2] Installing NOPASSWD sudoers entries to ${SUDOERS_FILE}..."
+TMP="${SUDOERS_FILE}.tmp.$$"
+cat > "$TMP" <<EOF
+# Managed by ~/.local/bin/setup-sway-wsl (chezmoi).
+# Allow ${USER_NAME} to reset /tmp/.X11-unix without password prompt.
+# Required by ~/.local/bin/start-sway because WSLg's bind-mount of
+# /tmp/.X11-unix loses the sticky bit and Xwayland refuses to use it.
+${USER_NAME} ALL=(root) NOPASSWD: /usr/bin/umount /tmp/.X11-unix
+${USER_NAME} ALL=(root) NOPASSWD: /usr/bin/rm -rf /tmp/.X11-unix
+EOF
+chmod 0440 "$TMP"
+
+if visudo -cf "$TMP" >/dev/null; then
+  mv "$TMP" "$SUDOERS_FILE"
+  echo "Installed: $SUDOERS_FILE"
+else
+  rm -f "$TMP"
+  echo "ERROR: sudoers validation failed; not installing." >&2
+  exit 1
+fi
+
+echo
+echo "Done. start-sway should no longer prompt for sudo."
+echo "Test by exiting current sway and re-launching: ~/.local/bin/start-sway"

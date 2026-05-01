@@ -3,6 +3,7 @@
 
 #waybar {
   font-family:
+    "JetBrainsMono Nerd Font",
     "JetBrains Mono",
     Hack,
     Cantarell,
@@ -21,7 +22,7 @@ window#waybar {
   text-shadow: none;
   transition-duration: 0s;
   color: {{ $t.foreground }};
-  background-color: {{ $t.background }}e6;
+  background-color: {{ $t.bar_bg_rgba }};
 }
 
 #workspaces {
@@ -104,7 +105,7 @@ window#waybar {
   padding: 2px 15px;
   min-width: 140px;
   color: {{ $t.magenta }};
-  border-radius: 5;
+  border-radius: 5px;
   font-family: Roboto;
   background: {{ $t.background }};
 }

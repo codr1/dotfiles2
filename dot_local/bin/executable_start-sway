@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+#
+# start-sway — launch sway under WSL2 + WSLg
+#
+# Hybrid of:
+#   - https://github.com/jordankoehn/sway-wsl2 (MIT) — sticky-bit + systemd kickstart
+#   - local additions: toolkit env vars, exec passthrough
+
+set -u
+
+# Session metadata
+export XDG_SESSION_DESKTOP=sway
+export XDG_CURRENT_DESKTOP=sway
+export XDG_SESSION_TYPE=wayland
+
+export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
+
+# Wayland-preferred toolkits
+export GDK_BACKEND=wayland
+export QT_QPA_PLATFORM=wayland
+export CLUTTER_BACKEND=wayland
+
+# 1) Ensure user systemd is running (needed for win-to-clipboard.service etc.)
+#    Recent Arch on WSL doesn't always start user@.service automatically.
+#    See https://github.com/microsoft/WSL/issues/8842
+#    setup-sway-wsl enables lingering, after which this block is always skipped.
+if [[ ! -e ${XDG_RUNTIME_DIR}/bus ]]; then
+  while ! sudo systemctl restart "user@$(id -u)"; do
+    sleep 1
+  done
+  while [[ ! -e ${XDG_RUNTIME_DIR}/bus ]]; do
+    printf 'Waiting for user systemd to start...\n'
+    sleep 1
+  done
+fi
+
+# 2) Reset /tmp/.X11-unix so XWayland will start.
+#    WSLg bind-mounts /tmp/.X11-unix from Windows; the bind-mount loses the
+#    sticky bit and XWayland refuses to use it. We tear it down and recreate
+#    a normal sticky-bit dir.
+#
+#    Run setup-sway-wsl once to install a NOPASSWD sudoers entry so these
+#    don't prompt on every sway launch.
+if mountpoint -q /tmp/.X11-unix; then
+  # WSLg sometimes drops the bind-mount between our check and umount;
+  # the resulting "not mounted" stderr is cosmetic, suppress it.
+  sudo /usr/bin/umount /tmp/.X11-unix 2>/dev/null
+fi
+sudo /usr/bin/rm -rf /tmp/.X11-unix
+mkdir -p /tmp/.X11-unix
+chmod 01777 /tmp/.X11-unix
+
+# 3) Make WSLg's Wayland socket reachable from our XDG_RUNTIME_DIR
+ln -sf /mnt/wslg/runtime-dir/wayland-0      "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}"
+ln -sf /mnt/wslg/runtime-dir/wayland-0.lock "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}.lock"
+
+exec sway "$@"
