@@ -1,6 +1,9 @@
 # Starship prompt configuration - managed by chezmoi
 # Profile: {{ .profile }} | Theme: {{ .starship_theme }} | Host: {{ .hostname }}
 
+# Top-level options must come before any [section] header in TOML.
+command_timeout = 500
+
 format = """
 $hostname\
 [░▒▓](#7aa2f7)\
@@ -192,8 +195,6 @@ format = '[ $hostname](bg:#1a4176 fg:#8a8b96)'
 disabled = true
 {{- end }}
 
-# Performance optimizations
-command_timeout = 500
 
 # TokyoNight color scheme
 # Primary: #7aa2f7 (blue)
