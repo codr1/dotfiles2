@@ -47,6 +47,15 @@ exec wl-paste --watch ~/.local/bin/clipboard-to-win
 exec systemctl --user restart win-to-clipboard
 {{- end }}
 
+{{- if eq .profile "bare-metal" }}
+### Input configuration
+# WSL/VM inherit input behavior from the host (Windows/hypervisor),
+# so touchpad tweaks only make sense on bare-metal.
+input type:touchpad {
+    natural_scroll enabled
+}
+{{- end }}
+
 ### Key bindings
     bindsym $mod+Return exec $term
     bindsym $mod+Shift+q kill
