@@ -362,7 +362,7 @@ Polybar and Waybar use icon fonts for status indicators:
 
 ```bash
 # Arch
-pacman -S ttf-font-awesome ttf-jetbrains-mono-nerd
+pacman -S woff2-font-awesome ttf-jetbrains-mono-nerd
 
 # Fedora
 dnf install fontawesome-fonts jetbrains-mono-fonts
