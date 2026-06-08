@@ -388,15 +388,15 @@ sudo systemctl enable --now bluetooth.service
 
 ```bash
 # Arch
-pacman -S networkmanager-dmenu blueman
+pacman -S networkmanager-dmenu nm-connection-editor blueman
 
 # Fedora
-dnf install networkmanager-dmenu blueman
+dnf install networkmanager-dmenu nm-connection-editor blueman
 ```
 
-`networkmanager-dmenu`'s "Edit Connections" menu entry is wired to launch
-`nm-connection-editor` — install that optional dep if you want full
-per-connection config (VPN setup, static IPs, 802.1x, etc.).
+`nm-connection-editor` is what `networkmanager-dmenu`'s "Edit Connections"
+menu entry actually opens — without it, the entry falls back to a terminal
+editor in `foot`, which is jarring next to the wofi-themed picker.
 
 WSL and VM profiles don't get these — WSL has no NetworkManager backend and
 VMs inherit networking from the host, so the picker would be useless. The

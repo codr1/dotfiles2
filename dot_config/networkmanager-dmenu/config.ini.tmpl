@@ -15,7 +15,14 @@ format = {name}  {sec}  {bars}
 list_saved = False
 prompt = Networks
 
+[dmenu_passphrase]
+# Required for the password prompt to actually mask input on wofi/rofi/etc.
+# Without this, networkmanager-dmenu launches the menu in regular dmenu mode
+# and the "type your wifi password" step looks like an empty search box.
+obscure = True
+
 [editor]
-# nm-connection-editor is an optional dep; install it if you want the
-# "Edit Connections" menu entry to actually open a GUI editor.
+# Falls back to a terminal nmtui-style editor when nm-connection-editor
+# isn't installed. With nm-connection-editor present (recommended), the
+# "Edit Connections" menu entry opens the GUI directly.
 terminal = foot
