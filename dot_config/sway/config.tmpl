@@ -48,6 +48,9 @@ exec systemctl --user restart win-to-clipboard
 {{- end }}
 
 {{- if eq .profile "bare-metal" }}
+# Bare-metal startup: bluetooth tray applet (blueman package)
+exec blueman-applet
+
 ### Input configuration
 # WSL/VM inherit input behavior from the host (Windows/hypervisor),
 # so touchpad tweaks only make sense on bare-metal.
