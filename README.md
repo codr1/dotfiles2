@@ -370,6 +370,39 @@ dnf install fontawesome-fonts jetbrains-mono-fonts
 
 Without these fonts, icons will render as boxes.
 
+### Bare-metal extras: wifi + bluetooth managers
+
+On `profile = "bare-metal"`, the waybar `network` module is wired to launch
+[`networkmanager-dmenu`](https://github.com/firecat53/networkmanager-dmenu) on
+left-click (right-click toggles the SSID/IP view). It uses `wofi --dmenu` as
+its menu backend, so it inherits the rest of the dotfiles2 launcher styling.
+Its config is themed from the same `[data.themes.*]` block as everything else.
+
+For bluetooth, install `blueman` — `blueman-applet` lands in the waybar tray
+and `blueman-manager` opens the full pair/audio/discover GUI. The bluetooth
+service is usually pre-enabled on most distros; if not, enable it:
+
+```bash
+sudo systemctl enable --now bluetooth.service
+```
+
+```bash
+# Arch
+pacman -S networkmanager-dmenu blueman
+
+# Fedora
+dnf install networkmanager-dmenu blueman
+```
+
+`networkmanager-dmenu`'s "Edit Connections" menu entry is wired to launch
+`nm-connection-editor` — install that optional dep if you want full
+per-connection config (VPN setup, static IPs, 802.1x, etc.).
+
+WSL and VM profiles don't get these — WSL has no NetworkManager backend and
+VMs inherit networking from the host, so the picker would be useless. The
+underlying waybar `network` module is still deployed everywhere and shows
+status / IP via its existing left-click toggle on those profiles.
+
 ## Attribution
 
 The WSL clipboard-sync scripts and the structural skeleton of `start-sway`

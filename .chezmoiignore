@@ -7,6 +7,13 @@ README.md
 .config/swaylock/config
 {{ end }}
 
+# networkmanager-dmenu is bare-metal only — VM/WSL inherit networking from host
+# and don't have NetworkManager running anyway.
+{{ if ne .profile "bare-metal" }}
+.config/networkmanager-dmenu
+.config/networkmanager-dmenu/config.ini
+{{ end }}
+
 # Ignore picom on non-i3 (sway has built-in compositor)
 {{ if ne .wm "i3" }}
 .config/picom
