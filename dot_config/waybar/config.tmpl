@@ -7,9 +7,9 @@
     "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
     "modules-center": ["clock"],
 {{- if eq .profile "bare-metal" }}
-    "modules-right": ["custom/recorder", "tray", "pulseaudio", "backlight", "temperature", "cpu", "memory", "battery", "network", "custom/powermenu"],
+    "modules-right": ["custom/recorder", "pulseaudio", "backlight", "temperature", "cpu", "memory", "battery", "network", "tray", "custom/powermenu"],
 {{- else }}
-    "modules-right": ["custom/recorder", "tray", "pulseaudio", "temperature", "cpu", "memory", "network", "custom/powermenu"],
+    "modules-right": ["custom/recorder", "pulseaudio", "temperature", "cpu", "memory", "network", "tray", "custom/powermenu"],
 {{- end }}
     "sway/mode": {
         "format": " {}"
