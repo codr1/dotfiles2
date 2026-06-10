@@ -205,6 +205,11 @@ client.urgent           {{ $t.urgent }} {{ $t.urgent }} {{ $t.background }} {{ $
 ### Floating window rules
 for_window [class="pavucontrol"] floating enable
 for_window [app_id="org.pulseaudio.pavucontrol"] floating enable
+for_window [app_id="blueman-manager"] floating enable
+for_window [app_id="blueman-services"] floating enable
+# Catch-all for transient dialogs (PIN entry, polkit prompts, GTK confirm,
+# blueman pair wizards, etc.) — any window declaring window_role=dialog floats.
+for_window [window_role="dialog"] floating enable
 for_window [class="firefox" title="Firefox — Sharing Indicator"] floating enable
 for_window [class="firefox" title="Picture-in-Picture"] floating enable
 for_window [class="firefox" title="About Mozilla Firefox"] floating enable
