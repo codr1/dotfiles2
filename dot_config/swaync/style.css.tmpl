@@ -1,0 +1,130 @@
+{{- $t := index .themes .theme -}}
+/* {{ $t.name }} theme for swaync - managed by chezmoi */
+
+@define-color bg              {{ $t.background }};
+@define-color bg-alt          {{ $t.background_alt }};
+@define-color bg-dark         {{ $t.background_darker }};
+@define-color fg              {{ $t.foreground }};
+@define-color fg-dim          {{ $t.foreground_alt }};
+@define-color accent          {{ $t.primary }};
+@define-color accent-2        {{ $t.secondary }};
+@define-color urgent          {{ $t.urgent }};
+
+/* ───── notification toast ───── */
+.notification-row {
+  outline: none;
+  margin: 6px 12px;
+  padding: 0;
+  background: transparent;
+}
+
+.notification {
+  background-color: alpha(@bg, 0.95);
+  color: @fg;
+  border: 2px solid @accent;
+  border-radius: 10px;
+  padding: 0;
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-size: 13px;
+}
+
+.notification-content {
+  padding: 14px;
+  background: transparent;
+  border-radius: 10px;
+}
+
+.summary {
+  color: @fg;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.time {
+  color: @fg-dim;
+  font-size: 11px;
+}
+
+.body {
+  color: @fg;
+  font-size: 13px;
+}
+
+/* Action buttons — the whole reason we're on swaync */
+.notification-action {
+  background-color: @bg-alt;
+  color: @fg;
+  border: 1px solid @accent;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin: 4px;
+  font-weight: bold;
+}
+.notification-action:hover {
+  background-color: @accent;
+  color: @bg;
+}
+
+.notification-default-action {
+  border-radius: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.close-button {
+  background: transparent;
+  color: @fg-dim;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: 2px;
+}
+.close-button:hover {
+  background-color: @urgent;
+  color: @fg;
+}
+
+/* Urgency-specific borders so actionable / critical stands out */
+.notification.low      { border-color: @fg-dim; }
+.notification.normal   { border-color: @accent; }
+.notification.critical { border-color: @urgent; }
+
+/* ───── control center panel ───── */
+.control-center {
+  background-color: alpha(@bg, 0.95);
+  border: 2px solid @accent;
+  border-radius: 12px;
+  padding: 10px;
+  margin: 10px;
+}
+
+.widget-title > label {
+  color: @fg;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.widget-title > button {
+  background-color: @bg-alt;
+  color: @fg;
+  border: 1px solid @accent;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.widget-dnd > label {
+  color: @fg;
+}
+
+.widget-dnd > switch {
+  background-color: @bg-alt;
+  border: 1px solid @accent;
+  border-radius: 12px;
+}
+.widget-dnd > switch:checked {
+  background-color: @accent;
+}
+
+/* ───── floating notification window ───── */
+.floating-notifications {
+  background: transparent;
+}
