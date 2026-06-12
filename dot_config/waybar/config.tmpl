@@ -18,20 +18,7 @@
     "sway/workspaces": {
         "disable-scroll": true,
         "all-outputs": false,
-        "disable-markup": false,
-        "format": "{icon}",
-        "format-icons": {
-            "1": "1 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "2": "2 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "3": "3 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "4": "4 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "5": "5 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "6": "6 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "7": "7 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "8": "8 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "9": "9 <span font='Font Awesome 7 Free Solid 14'></span>",
-            "10": "0 <span font='Font Awesome 7 Free Solid 14'></span>"
-        }
+        "format": "{value}"
     },
     "tray": {
         "icon-size": 20,
@@ -95,9 +82,12 @@
         "format": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span>",
         "format-alt": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span> {capacity}%",
         "format-alt-click": "click-left",
-        "format-charging": "<span font='JetBrainsMono Nerd Font 14'>󰂃</span> <span font='JetBrainsMono Nerd Font 14'>{icon}</span>",
+        "format-charging": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span>",
         "format-full": "<span font='JetBrainsMono Nerd Font 14'>󰁹</span>",
-        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "format-icons": {
+            "default": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+            "charging": ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"]
+        },
         "format-time": "{H}h:{M}m",
         "tooltip-format": "{capacity}% • {time}",
         "interval": 15,
@@ -108,7 +98,7 @@
     },
     "backlight": {
         "format": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span> {percent}%",
-        "format-icons": ["󰃞", "󰃟", "󰃠", "󰃢", "󰃤"],
+        "format-icons": ["󰃚", "󰃜", "󰃝", "󰃞", "󰃠"],
         "tooltip-format": "Brightness: {percent}%",
         "on-scroll-up": "light -A 1",
         "on-scroll-down": "light -U 1"

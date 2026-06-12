@@ -263,13 +263,54 @@ When `wm = "i3"`, these additional configs are deployed:
 ### Floating Window Rules
 
 Both sway and i3 configs include floating rules for:
-- `pavucontrol` - Audio control
+- `pavucontrol` - Audio control (both `class=` X11 and `app_id=` Wayland matches — older configs only had the `class=` rule which silently no-ops on Wayland-native pavucontrol)
 - Firefox popups (Sharing Indicator, Picture-in-Picture, About dialog)
 - GNOME Control Center
 - GNOME Calculator
 - Generic Picture-in-Picture windows
+- `blueman-manager` and `blueman-services` (bare-metal only)
+- Catch-all: any window declaring `window_role=dialog` — covers PIN entry, polkit prompts, GTK "Save changes?" modals, etc.
 
 Hyprland requires a separate config (different syntax entirely) - not yet implemented.
+
+### Workspace renaming (tmux-style)
+
+`Mod+,` (Super + comma) prompts via wofi to rename the focused workspace —
+shape of `Ctrl+B ,` from tmux. The actual rename action is
+`swaymsg rename workspace to "N: name"`, where `N` is the current
+workspace's `num` so sway keeps sorting workspaces correctly. Empty input
+reverts to the bare number.
+
+| | |
+|---|---|
+| Bind | `Mod+,` (next to `Mod+d` launcher) |
+| Script | `~/.local/bin/sway-rename-workspace` |
+| Max suffix length | 8 chars (silent truncation; bump `MAX_LEN` in the script if you want more) |
+| Bar render | `{value}` placeholder shows sway's raw name including the `N:` prefix — `{name}` would strip it (see [waybar-sway-workspaces(5)](https://man.archlinux.org/man/extra/waybar/waybar-sway-workspaces.5.en)) |
+
+### Bare-metal input customizations
+
+Lives in the bare-metal-gated `input type:touchpad` block in `sway/config.tmpl`:
+
+```
+input type:touchpad {
+    natural_scroll enabled
+    click_method clickfinger
+    pointer_accel 0.3
+    scroll_factor 0.5
+}
+```
+
+- `natural_scroll enabled` — fingers and content move the same direction
+- `click_method clickfinger` — finger count picks the button; 1=left,
+  2=right, 3=middle anywhere on the pad (no bottom-corner click-zones)
+- `pointer_accel 0.3` — slightly faster cursor (range -1.0…1.0;
+  positive = faster)
+- `scroll_factor 0.5` — half-speed two-finger scroll
+  (sway-level, not surfaced via libinput IPC)
+
+WSL/VM profiles inherit input behavior from the host, so this block is
+profile-gated.
 
 ## Starship Prompt Configuration
 

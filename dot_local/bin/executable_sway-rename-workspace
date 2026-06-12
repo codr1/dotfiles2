@@ -1,0 +1,41 @@
+#!/bin/bash
+# Rename the focused sway workspace via a wofi prompt.
+# Matches tmux's `Ctrl+B ,` convention.
+#
+# Sway sorts workspaces by their numeric `num` field, so we preserve the
+# leading "N: " prefix and only edit the suffix. Empty input reverts the
+# workspace back to its bare number.
+
+set -euo pipefail
+
+# Max length of the custom suffix (the part after "N: "). Bar real estate is
+# limited; bump if you want longer names.
+MAX_LEN=8
+
+# Focused workspace's num + current name
+focused=$(swaymsg -t get_workspaces | jq -r '.[] | select(.focused) | "\(.num)\t\(.name)"')
+num=${focused%%	*}
+current=${focused#*	}
+
+# Existing custom suffix (everything after "N: " or "N:"), if any
+default=""
+if [[ "$current" =~ ^${num}:\ ?(.+)$ ]]; then
+    default="${BASH_REMATCH[1]}"
+fi
+
+# Prompt. wofi --dmenu accepts free typing even when stdin has no entries;
+# piping the existing name as the only line lets the user just hit Enter to
+# keep it, or type a replacement.
+new=$(printf '%s\n' "$default" | wofi --dmenu --prompt "Rename ws $num (max $MAX_LEN chars)" --width 400 --height 80 || true)
+
+# Truncate to MAX_LEN — silent. If the user wanted more they'd set MAX_LEN.
+new=${new:0:$MAX_LEN}
+
+# Apply: bare number when cleared, "N: name" otherwise (note the space after
+# the colon — visual breathing room in the bar).
+if [[ -z "$new" ]]; then
+    swaymsg "rename workspace to \"$num\""
+else
+    safe=$(printf '%s' "$new" | sed 's/"/\\"/g')
+    swaymsg "rename workspace to \"${num}: ${safe}\""
+fi

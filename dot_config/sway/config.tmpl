@@ -57,6 +57,8 @@ exec blueman-applet
 input type:touchpad {
     natural_scroll enabled
     click_method clickfinger
+    pointer_accel 0.3
+    scroll_factor 0.5
 }
 {{- end }}
 
@@ -64,6 +66,7 @@ input type:touchpad {
     bindsym $mod+Return exec $term
     bindsym $mod+Shift+q kill
     bindsym $mod+d exec $menu
+    bindsym $mod+comma exec ~/.local/bin/sway-rename-workspace
 
     # Screenshots
 {{- if eq .wm "i3" }}
