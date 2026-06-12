@@ -7,7 +7,7 @@
     "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
     "modules-center": ["clock"],
 {{- if eq .profile "bare-metal" }}
-    "modules-right": ["custom/recorder", "pulseaudio", "backlight", "temperature", "cpu", "memory", "battery", "network", "tray", "custom/powermenu"],
+    "modules-right": ["custom/recorder", "backlight", "temperature", "cpu", "memory", "battery", "pulseaudio", "bluetooth", "network", "custom/powermenu"],
 {{- else }}
     "modules-right": ["custom/recorder", "pulseaudio", "temperature", "cpu", "memory", "network", "tray", "custom/powermenu"],
 {{- end }}
@@ -21,16 +21,16 @@
         "disable-markup": false,
         "format": "{icon}",
         "format-icons": {
-            "1": "1 <span font='Font Awesome 5 Free 14'></span>",
-            "2": "2 <span font='Font Awesome 5 Free 14'></span>",
-            "3": "3 <span font='Font Awesome 5 Free 14'></span>",
-            "4": "4 <span font='Font Awesome 5 Free 14'></span>",
-            "5": "5 <span font='Font Awesome 5 Free 14'></span>",
-            "6": "6 <span font='Font Awesome 5 Free 14'></span>",
-            "7": "7 <span font='Font Awesome 5 Free 14'></span>",
-            "8": "8 <span font='Font Awesome 5 Free 14'></span>",
-            "9": "9 <span font='Font Awesome 5 Free 14'></span>",
-            "10": "0 <span font='Font Awesome 5 Free 14'></span>"
+            "1": "1 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "2": "2 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "3": "3 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "4": "4 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "5": "5 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "6": "6 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "7": "7 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "8": "8 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "9": "9 <span font='Font Awesome 7 Free Solid 14'></span>",
+            "10": "0 <span font='Font Awesome 7 Free Solid 14'></span>"
         }
     },
     "tray": {
@@ -47,19 +47,19 @@
     },
     "cpu": {
         "interval": 5,
-        "format": "︁  |{}%",
+        "format": "<span font='JetBrainsMono Nerd Font 14'></span> {usage}%",
+        "tooltip-format": "CPU: {usage}%  •  load: {load}",
         "max-length": 10
     },
     "memory": {
         "interval": 15,
-        "format": "<span font='Font Awesome 5 Free 9'>︁</span> {used:0.1f}G / {total:0.1f}G",
-        "tooltip": false
+        "format": "<span font='JetBrainsMono Nerd Font 14'></span> {percentage}%",
+        "tooltip-format": "RAM: {used:0.1f}G / {total:0.1f}G ({percentage}%)\nSwap: {swapUsed:0.1f}G / {swapTotal:0.1f}G"
     },
     "custom/powermenu": {
         "return-type": "json",
         "exec": "{{ .chezmoi.homeDir }}/.config/waybar/modules/powermenu.sh",
-        "format": "<span font='Font Awesome 5 Free 9'>{icon} </span>  {text}",
-        "format-icons": [""],
+        "format": "<span font='JetBrainsMono Nerd Font 14'>󰐥</span> {text}",
         "interval": 3600,
         "escape": true,
         "on-click": "{{ .chezmoi.homeDir }}/.config/wofi/wofi-power.sh"
@@ -76,65 +76,83 @@
     },
 {{- if eq .profile "bare-metal" }}
     "battery": {
-        "format": "<span font='Font Awesome 5 Free 11'>{icon} </span> {capacity}%{time}",
-        "format-icons": ["", "", "", "", ""],
-        "format-time": " ({H}h:{m}m)",
-        "format-charging": "<span font='Font Awesome 5 Free'></span>  <span font='Font Awesome 5 Free 11'>{icon}</span>  {capacity}% - {time}",
-        "format-full": "<span font='Font Awesome 5 Free'></span>  <span font='Font Awesome 5 Free 11'>{icon}</span>  Charged",
+        // Pin to the laptop battery only.
+        //
+        // Without this, the battery module enumerates every entry under
+        // /sys/class/power_supply/ — including BT HID peripherals (mice,
+        // keyboards) that show up as hidpp_battery_N. waybar's battery
+        // module doesn't gracefully handle those entries appearing and
+        // disappearing as the device sleeps/reconnects, and throws an
+        // uncaught std::runtime_error ("Could not watch events for
+        // /sys/class/power_supply/hidpp_battery_*") → std::terminate →
+        // waybar dies entirely. Pinning to BAT0 avoids touching those
+        // entries at all.
+        //
+        // Trade-off: you lose the "cool" peripheral-battery-in-the-bar
+        // feature. If a future waybar release handles transient
+        // power_supply devices safely, drop this line to get it back.
+        "bat": "BAT0",
+        "format": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span>",
+        "format-alt": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span> {capacity}%",
+        "format-alt-click": "click-left",
+        "format-charging": "<span font='JetBrainsMono Nerd Font 14'>󰂃</span> <span font='JetBrainsMono Nerd Font 14'>{icon}</span>",
+        "format-full": "<span font='JetBrainsMono Nerd Font 14'>󰁹</span>",
+        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "format-time": "{H}h:{M}m",
+        "tooltip-format": "{capacity}% • {time}",
         "interval": 15,
         "states": {
             "warning": 25,
             "critical": 10
-        },
-        "tooltip": false
+        }
     },
     "backlight": {
-        "format": "{icon} {percent}%",
-        "format-alt": "{icon}",
-        "format-alt-click": "click-left",
-        "format-icons": ["", ""],
+        "format": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span> {percent}%",
+        "format-icons": ["󰃞", "󰃟", "󰃠", "󰃢", "󰃤"],
+        "tooltip-format": "Brightness: {percent}%",
         "on-scroll-up": "light -A 1",
         "on-scroll-down": "light -U 1"
     },
 {{- end }}
     "network": {
-        "format": "{icon}",
-        "format-alt": "<span font='Font Awesome 5 Free 10'>︁</span> ︁{ipaddr}/{cidr} {icon}",
+        "format-wifi": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span>",
+        "format-ethernet": "<span font='JetBrainsMono Nerd Font 14'>󰈀</span>",
+        "format-disconnected": "<span font='JetBrainsMono Nerd Font 14'>󰤪</span>",
+        "format-icons": ["󰤟", "󰤢", "󰤥", "󰤨"],
+        "tooltip-format-wifi": "{essid}\n{ipaddr}/{cidr} • {signalStrength}%",
+        "tooltip-format-ethernet": "{ifname}\n{ipaddr}/{cidr}",
+        "tooltip-format-disconnected": "Disconnected",
 {{- if eq .profile "bare-metal" }}
-        "format-alt-click": "click-right",
-        "on-click": "networkmanager_dmenu",
-{{- else }}
-        "format-alt-click": "click-left",
+        "on-click": "networkmanager_dmenu"
 {{- end }}
-        "format-wifi": "<span font='Font Awesome 5 Free 10'></span> {essid} ({signalStrength}%)",
-        "format-ethernet": "<span font='Font Awesome 5 Free 10'>︁</span> {ifname}",
-        "format-disconnected": "⚠ Disconnected",
-        "tooltip": false
     },
     "pulseaudio": {
-        "format": "<span font='Font Awesome 5 Free 11'>{icon:2} </span>{volume}%",
-        "format-alt": "<span font='Font Awesome 5 Free 11'>{icon:2}</span>{volume}%",
-        "format-alt-click": "click-right",
-        "format-muted": "<span font='Font Awesome 5 Free 11'></span>",
+        "format": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span>",
+        "format-muted": "<span font='JetBrainsMono Nerd Font 14'>󰸈</span>",
         "format-icons": {
-            "phone": [" ", " ", " ", " "],
-            "default": ["", "", "", ""]
+            "default": ["󰕿", "󰖀", "󰕾"]
         },
         "scroll-step": 2,
-        "on-click": "pavucontrol",
-        "tooltip": false
+        "tooltip-format": "{desc} • {volume}%",
+        "on-click": "pavucontrol"
     },
     "temperature": {
         "critical-threshold": 75,
         "interval": 5,
-        "format": "{icon} {temperatureC}°",
-        "tooltip": false,
-        "format-icons": [
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
+        "format": "<span font='JetBrainsMono Nerd Font 14'>{icon}</span> {temperatureC}°",
+        "format-icons": ["", "", "", "", "", "", "", "", "", ""],
+        "tooltip-format": "Temp: {temperatureC}°C  •  critical at 75°C"
+    },
+{{- if eq .profile "bare-metal" }}
+    "bluetooth": {
+        "format": "<span font='JetBrainsMono Nerd Font 14'>󰂯</span>",
+        "format-connected": "<span font='JetBrainsMono Nerd Font 14'>󰂰</span> {num_connections}",
+        "format-off": "<span font='JetBrainsMono Nerd Font 14'>󰂱</span>",
+        "format-disabled": "",
+        "tooltip-format": "{controller_alias} ({controller_address})",
+        "tooltip-format-connected": "{controller_alias}\n{num_connections} connected:\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "  {device_alias}",
+        "on-click": "blueman-manager"
     }
+{{- end }}
 }

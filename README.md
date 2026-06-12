@@ -138,9 +138,20 @@ own `.bashrc` and can drop additional files into `~/.bashrc.d/` at will.
 | Mod key | Alt (Mod1) | Super (Mod4) | Super (Mod4) |
 | Terminal | foot | ghostty | ghostty |
 | Clipboard sync | Yes | No | No |
-| Battery module | No | No | Yes |
+| Battery module | No | No | Yes (pinned to BAT0 — see note) |
 | Backlight module | No | No | Yes |
 | Swaylock | No | No | Yes |
+
+> **Battery module pinned to BAT0**: the waybar `battery` module config
+> hardcodes `"bat": "BAT0"` rather than auto-enumerating
+> `/sys/class/power_supply/`. The auto path picks up BT HID peripherals
+> as `hidpp_battery_*` (your mouse, keyboard) and waybar's battery
+> module doesn't gracefully handle those appearing/disappearing —
+> a paired BT mouse going to sleep and reconnecting can throw an
+> uncaught `std::runtime_error` and crash waybar entirely. Pinning to
+> the laptop battery avoids the bug. Cost: no peripheral battery
+> levels in the bar. If a future waybar release fixes the transient
+> power_supply handling, drop the `bat` line.
 
 ## WSL Setup
 
@@ -362,13 +373,27 @@ Polybar and Waybar use icon fonts for status indicators:
 
 ```bash
 # Arch
-pacman -S woff2-font-awesome ttf-jetbrains-mono-nerd
+pacman -S otf-font-awesome ttf-jetbrains-mono-nerd
 
 # Fedora
 dnf install fontawesome-fonts jetbrains-mono-fonts
 ```
 
-Without these fonts, icons will render as boxes.
+Use `otf-font-awesome`, not `woff2-font-awesome`. They're both v7+ Font Awesome
+packages, but `woff2-font-awesome` ships only `.woff2` files — a web-only
+format that fontconfig doesn't index, so desktop apps (waybar, ghostty, etc.)
+can't render the glyphs and fall back to Noto Sans / similar, leaving blanks
+where icons should be. The `.otf` package is what desktop apps actually use.
+
+The waybar config templates request the family name `Font Awesome 7 Free Solid`
+explicitly. In FA Free, almost every glyph lives in the Solid-900 weight; the
+Regular-400 weight has only a small subset of outlined-style icons. Asking
+fontconfig for just `Font Awesome 7 Free` resolves to Regular-400 first and
+most icons render blank — keep the `Solid` suffix in sync if Font Awesome
+ever ships a v8.
+
+Without these fonts, icons will render as boxes (or, in the woff2-only case,
+as nothing at all).
 
 ### Bare-metal extras: wifi + bluetooth managers
 
@@ -378,9 +403,20 @@ left-click (right-click toggles the SSID/IP view). It uses `wofi --dmenu` as
 its menu backend, so it inherits the rest of the dotfiles2 launcher styling.
 Its config is themed from the same `[data.themes.*]` block as everything else.
 
-For bluetooth, install `blueman` — `blueman-applet` lands in the waybar tray
-and `blueman-manager` opens the full pair/audio/discover GUI. The bluetooth
-service is usually pre-enabled on most distros; if not, enable it:
+For bluetooth, you need the full stack:
+
+| Package | What it does |
+|---------|--------------|
+| `bluez` | Core BlueZ stack (host-side BT protocol implementation) |
+| `bluez-utils` | `bluetoothctl` and friends — required for any CLI pair/connect/info |
+| `blueman` | GTK frontend: `blueman-applet` lands in the waybar tray and `blueman-manager` opens the full pair/audio/discover GUI; also registers the DBus agent that handles pairing confirmations |
+
+Audio profile (A2DP/HSP) lands through pipewire on most modern setups —
+`wireplumber` covers BT audio routing automatically if you're already on the
+pipewire stack the rest of dotfiles2 assumes. If you're on PulseAudio, install
+`pulseaudio-bluetooth` instead.
+
+The bluetooth service is pre-enabled on most distros; if not, enable it:
 
 ```bash
 sudo systemctl enable --now bluetooth.service
@@ -388,15 +424,19 @@ sudo systemctl enable --now bluetooth.service
 
 ```bash
 # Arch
-pacman -S networkmanager-dmenu nm-connection-editor blueman
+pacman -S networkmanager-dmenu nm-connection-editor bluez bluez-utils blueman
 
 # Fedora
-dnf install networkmanager-dmenu nm-connection-editor blueman
+dnf install networkmanager-dmenu nm-connection-editor bluez blueman
 ```
 
 `nm-connection-editor` is what `networkmanager-dmenu`'s "Edit Connections"
 menu entry actually opens — without it, the entry falls back to a terminal
 editor in `foot`, which is jarring next to the wofi-themed picker.
+
+`bluez` + `bluez-utils` are usually preinstalled on full desktop spins (Fedora
+Workstation, CachyOS, most Ubuntu flavors); minimal Arch installs won't have
+them. Either way, listing them keeps the dependency story honest.
 
 WSL and VM profiles don't get these — WSL has no NetworkManager backend and
 VMs inherit networking from the host, so the picker would be useless. The
