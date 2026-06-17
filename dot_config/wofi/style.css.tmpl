@@ -21,7 +21,28 @@ window {
     background-color: {{ $t.background_darker }};
     color: {{ $t.foreground }};
     font-family: JetBrains Mono;
+    font-size: 16px;
 }
+
+/* Hide the GtkSearchEntry magnifying-glass icon — it makes the input look
+ * like a search box, which is misleading for prompts like "Passphrase". */
+#input image {
+    min-width: 0;
+    min-height: 0;
+    color: transparent;
+    background: transparent;
+    -gtk-icon-source: none;
+}
+
+/* NOTE: we explored styling wofi's placeholder text to make the prompt
+ * (passed via -p) more visible — GTK CSS doesn't reliably expose a
+ * placeholder pseudo-element across GTK3/GTK4/wofi versions, and any
+ * attempt with -gtk-placeholder-color trips the GTK CSS parser. The
+ * underlying limitation is real: wofi has no concept of a separate
+ * label above the input. For prompts that need a visible "what is
+ * this asking for" cue (e.g. wifi password entry), use pinentry-gnome3
+ * instead — networkmanager-dmenu has a `pinentry =` config option
+ * specifically for this. */
 
 #inner-box {
     margin: 10px;

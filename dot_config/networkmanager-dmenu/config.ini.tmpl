@@ -16,10 +16,13 @@ list_saved = False
 prompt = Networks
 
 [dmenu_passphrase]
-# Required for the password prompt to actually mask input on wofi/rofi/etc.
-# Without this, networkmanager-dmenu launches the menu in regular dmenu mode
-# and the "type your wifi password" step looks like an empty search box.
-obscure = True
+# Cleartext. obscure = True would mask the password (via wofi -P), but
+# wofi's password mode also suppresses the -p prompt label — so the user
+# sees an empty input box with no indication it's asking for a wifi
+# password. Trading masking for label visibility: the "Passphrase" prompt
+# placeholder is now visible the same way "Networks" is visible on the
+# picker. Don't enter wifi passwords with someone watching your screen.
+obscure = False
 
 [editor]
 # Falls back to a terminal nmtui-style editor when nm-connection-editor

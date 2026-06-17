@@ -67,6 +67,12 @@ input type:touchpad {
     bindsym $mod+Shift+q kill
     bindsym $mod+d exec $menu
     bindsym $mod+comma exec ~/.local/bin/sway-rename-workspace
+{{- if eq .profile "bare-metal" }}
+    # Lock screen. NOT bound to $mod+L because $right=l (so $mod+l is
+    # already 'focus right' in the vim-hjkl bindings further down).
+    # Ctrl+Alt+L is the universal Linux convention for screen lock.
+    bindsym Ctrl+Alt+l exec swaylock
+{{- end }}
 
     # Screenshots
 {{- if eq .wm "i3" }}
