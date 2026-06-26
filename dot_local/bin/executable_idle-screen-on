@@ -1,0 +1,4 @@
+#!/bin/bash
+# Turn outputs back on after DPMS-off.
+set -euo pipefail
+swaymsg "output * power on" >/dev/null

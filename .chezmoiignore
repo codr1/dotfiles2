@@ -14,6 +14,20 @@ README.md
 .config/networkmanager-dmenu/config.ini
 {{ end }}
 
+# Power management stack — bare-metal only (no battery / AC concept on VM/WSL).
+{{ if ne .profile "bare-metal" }}
+.local/bin/swayidle-launcher
+.local/bin/idle-dim
+.local/bin/idle-undim
+.local/bin/idle-screen-off
+.local/bin/idle-screen-on
+.local/bin/auto-power-profile
+.config/systemd/user/swayidle.service
+.config/systemd/user/auto-power-profile.service
+.config/systemd/user/auto-power-profile.timer
+run_once_after_install-power.sh
+{{ end }}
+
 # Ignore picom on non-i3 (sway has built-in compositor)
 {{ if ne .wm "i3" }}
 .config/picom

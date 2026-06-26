@@ -1,0 +1,10 @@
+[Unit]
+Description=Run auto-power-profile every 30s
+
+[Timer]
+OnBootSec=15s
+OnUnitActiveSec=30s
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+#!/bin/bash
+# Idle dim: save current backlight level, then lower it to 20%.
+# Pair with idle-undim which restores from the saved level.
+set -euo pipefail
+state="${XDG_RUNTIME_DIR:-/tmp}/brightness-before-dim"
+current=$(brightnessctl get)
+echo "$current" > "$state"
+brightnessctl set 20% >/dev/null

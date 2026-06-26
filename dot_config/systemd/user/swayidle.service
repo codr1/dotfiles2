@@ -1,0 +1,13 @@
+[Unit]
+Description=Sway idle daemon (dotfiles2 AC-aware launcher)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/swayidle-launcher
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

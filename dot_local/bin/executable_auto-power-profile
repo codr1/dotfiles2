@@ -1,0 +1,50 @@
+#!/bin/bash
+# Switch power-profiles-daemon profile based on AC + battery state.
+#
+# Rules:
+#   AC plugged           → performance
+#   On battery, > 25%    → balanced
+#   On battery, ≤ 25%    → power-saver
+#
+# Also: if AC state has flipped since the last run, restart
+# swayidle.service so the AC-aware timetable (defined by
+# swayidle-launcher) matches reality. This is how AC-event reaction
+# works without an /etc/udev rule — the timer that drives this script
+# polls every 30s, so worst-case latency between plug/unplug and
+# timetable swap is 30s.
+
+set -euo pipefail
+
+ac_online=0
+for f in /sys/class/power_supply/AC*/online; do
+    [[ -f "$f" ]] && ac_online=$(cat "$f")
+done
+
+battery_pct=100
+for f in /sys/class/power_supply/BAT*/capacity; do
+    [[ -f "$f" ]] && battery_pct=$(cat "$f")
+done
+
+if [[ "$ac_online" == "1" ]]; then
+    target=performance
+elif (( battery_pct <= 25 )); then
+    target=power-saver
+else
+    target=balanced
+fi
+
+current=$(powerprofilesctl get 2>/dev/null || echo "")
+if [[ "$current" != "$target" ]]; then
+    powerprofilesctl set "$target"
+fi
+
+# Track AC state across runs; restart swayidle if it flipped.
+state="${XDG_RUNTIME_DIR:-/tmp}/auto-power-profile.last-ac"
+last_ac=$(cat "$state" 2>/dev/null || echo "-1")
+if [[ "$ac_online" != "$last_ac" ]]; then
+    echo "$ac_online" > "$state"
+    # Only restart if the service is enabled and running.
+    if systemctl --user is-active --quiet swayidle.service; then
+        systemctl --user restart swayidle.service || true
+    fi
+fi

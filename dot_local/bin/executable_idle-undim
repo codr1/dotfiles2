@@ -1,0 +1,9 @@
+#!/bin/bash
+# Restore brightness to the level saved by idle-dim.
+# No-op if idle-dim never ran (no saved state).
+set -euo pipefail
+state="${XDG_RUNTIME_DIR:-/tmp}/brightness-before-dim"
+if [[ -r "$state" ]]; then
+    brightnessctl set "$(cat "$state")" >/dev/null
+    rm -f "$state"
+fi

@@ -1,0 +1,34 @@
+#!/bin/bash
+# Wrapper that launches `swayidle` with an AC-aware timetable.
+#
+# Behavior (per dotfiles2 power spec):
+#   AC plugged   → dim 10m, screen-off 30m, never auto-suspend
+#   On battery   → dim 5m, screen-off 10m, suspend 30m
+#   Always       → lock screen via swaylock immediately before suspend
+#
+# Re-launched by `auto-power-profile` whenever AC state flips so timetables
+# track the actual power source.
+
+set -euo pipefail
+
+ac_online=0
+for f in /sys/class/power_supply/AC*/online; do
+    [[ -f "$f" ]] && ac_online=$(cat "$f")
+done
+
+BIN="$HOME/.local/bin"
+
+if [[ "$ac_online" == "1" ]]; then
+    exec swayidle -w \
+        timeout 600  "$BIN/idle-dim"        resume "$BIN/idle-undim" \
+        timeout 1800 "$BIN/idle-screen-off" resume "$BIN/idle-screen-on" \
+        before-sleep 'swaylock -f' \
+        lock         'swaylock -f'
+else
+    exec swayidle -w \
+        timeout 300  "$BIN/idle-dim"        resume "$BIN/idle-undim" \
+        timeout 600  "$BIN/idle-screen-off" resume "$BIN/idle-screen-on" \
+        timeout 1800 'systemctl suspend' \
+        before-sleep 'swaylock -f' \
+        lock         'swaylock -f'
+fi

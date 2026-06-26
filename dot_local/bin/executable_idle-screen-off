@@ -1,0 +1,4 @@
+#!/bin/bash
+# Turn outputs off via sway DPMS.
+set -euo pipefail
+swaymsg "output * power off" >/dev/null

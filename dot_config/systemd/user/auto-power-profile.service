@@ -1,0 +1,6 @@
+[Unit]
+Description=Switch PPD profile by AC + battery state
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/auto-power-profile
