@@ -11,10 +11,8 @@
   font-size: 16px;
 }
 
-#window {
-  padding: 0 10px;
-}
-
+/* Floating-pill bar: the window itself is transparent, individual outer
+ * modules/groups carry the dark pill background. */
 window#waybar {
   border: none;
   border-radius: 0;
@@ -22,13 +20,28 @@ window#waybar {
   text-shadow: none;
   transition-duration: 0s;
   color: {{ $t.foreground }};
-  background-color: {{ $t.bar_bg_rgba }};
+  background-color: transparent;
 }
 
+/* Pill style for every outer module + group. Same bar background as before
+ * the rewrite ({{`{{ $t.bar_bg_rgba }}`}}, ~90% opaque dark). 10px radius,
+ * 6px vertical / 12px horizontal interior padding, 4px / 6px outer margin. */
+#workspaces,
+#window,
+#clock,
+#system,
+#connectivity,
+#custom-powermenu {
+  background-color: {{ $t.bar_bg_rgba }};
+  border-radius: 10px;
+  padding: 6px 12px;
+  margin: 4px 6px;
+}
+
+/* Workspaces still wraps buttons; their existing focused/visible/urgent
+ * styling lives on the buttons themselves further down. */
 #workspaces {
-  margin: 0 5px;
-  margin-left: 5px;
-  border-radius: 5px;
+  padding: 2px 6px;
 }
 
 #workspaces button {
@@ -78,6 +91,10 @@ window#waybar {
   color: {{ $t.red }};
 }
 
+/* Spacing for modules INSIDE pills. Was a hefty 10px left-margin when
+ * everything sat on a flat bar; reduced to 6px symmetric so the cluster
+ * inside each pill (system/connectivity) looks balanced and doesn't push
+ * the first module too far from the pill's own padding. */
 #tray,
 #mode,
 #battery,
@@ -91,14 +108,13 @@ window#waybar {
 #backlight,
 #custom-storage,
 #custom-cpu_speed,
-#custom-powermenu,
 #custom-spotify,
 #custom-weather,
 #custom-mail,
 #bluetooth,
 #custom-media {
-  margin: 0px 0px 0px 10px;
-  padding: 0 5px;
+  margin: 0 6px;
+  padding: 0;
 }
 
 /* Wifi-bars glyph hangs a few px past its nominal width; give #network extra right padding. */
@@ -106,14 +122,16 @@ window#waybar {
   padding-right: 9px;
 }
 
+/* Clock pill — picks up base pill styling (background, border-radius,
+ * padding, margin) from the shared selector above. We only set
+ * clock-specific bits here: min-width to keep the time column from
+ * jumping as digits change, magenta text for accent (kept from prior
+ * styling — user can call this off if it's too much), and the Roboto
+ * font (visually distinct from the JBM Nerd Font used elsewhere). */
 #clock {
-  margin: 4px 10px 4px 10px;
-  padding: 2px 15px;
   min-width: 140px;
   color: {{ $t.magenta }};
-  border-radius: 5px;
   font-family: Roboto;
-  background: {{ $t.background }};
 }
 
 #battery.warning {

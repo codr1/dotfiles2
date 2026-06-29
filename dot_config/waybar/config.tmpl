@@ -7,9 +7,19 @@
     "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
     "modules-center": ["clock"],
 {{- if eq .profile "bare-metal" }}
-    "modules-right": ["custom/recorder", "backlight", "temperature", "cpu", "memory", "battery", "pulseaudio", "bluetooth", "network", "custom/powermenu"],
+    "modules-right": ["custom/recorder", "group/system", "group/connectivity", "custom/powermenu"],
 {{- else }}
     "modules-right": ["custom/recorder", "pulseaudio", "temperature", "cpu", "memory", "network", "tray", "custom/powermenu"],
+{{- end }}
+{{- if eq .profile "bare-metal" }}
+    "group/system": {
+        "orientation": "horizontal",
+        "modules": ["backlight", "temperature", "cpu", "memory"]
+    },
+    "group/connectivity": {
+        "orientation": "horizontal",
+        "modules": ["battery", "pulseaudio", "bluetooth", "network"]
+    },
 {{- end }}
     "sway/mode": {
         "format": " {}"
