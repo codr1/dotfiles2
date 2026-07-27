@@ -1,0 +1,57 @@
+#!/bin/bash
+# Dual-mode helper for the laptop-keyboard-toggle waybar module
+# AND the Super+Escape sway keybind.
+#
+# Modes:
+#   (no arg)      emit JSON for waybar's `exec` (state as glyph + tooltip)
+#   toggle        flip send_events + notify with the new state
+#   should-show   waybar `exec-if` predicate: exit 0 to render the icon
+#                 (only when keyboard is DISABLED — the widget's whole
+#                 job is to be the visible "your kbd is off, click to
+#                 bring it back" fallback)
+#
+# The internal keyboard identifier is hardcoded because there's only one
+# laptop this dotfiles machine runs on. If we ever need to generalize,
+# swap to detecting by device type (type:keyboard + is-builtin heuristic).
+
+set -euo pipefail
+
+INTERNAL_KBD="1:1:AT_Translated_Set_2_keyboard"
+
+current_state() {
+    swaymsg -t get_inputs \
+        | jq -r ".[] | select(.identifier==\"${INTERNAL_KBD}\") | .libinput.send_events"
+}
+
+case "${1:-}" in
+    toggle)
+        swaymsg input "${INTERNAL_KBD}" events toggle >/dev/null
+        # Small settle before re-querying (sway IPC applies async).
+        sleep 0.1
+        state=$(current_state)
+        if [ "$state" = "enabled" ]; then
+            notify-send "Laptop keyboard: ON"
+        else
+            notify-send "Laptop keyboard: OFF"
+        fi
+        ;;
+    should-show)
+        [ "$(current_state)" = "disabled" ]
+        ;;
+    "")
+        # Waybar's `exec` — only invoked when should-show returned 0
+        # (i.e. keyboard is disabled). The `enabled` branch here is
+        # defensive noise; in practice you should never see the ON
+        # glyph because the module is hidden in that state.
+        state=$(current_state)
+        if [ "$state" = "disabled" ]; then
+            printf '{"text":"󰌐","tooltip":"Laptop keyboard: OFF\\nClick to re-enable"}\n'
+        else
+            printf '{"text":"󰌌","tooltip":"Laptop keyboard: ON"}\n'
+        fi
+        ;;
+    *)
+        echo "usage: $0 [toggle|should-show]" >&2
+        exit 2
+        ;;
+esac

@@ -4,6 +4,10 @@
     "layer": "top",
     "position": "top",
     "height": 40,
+    "margin-top": 4,
+    "margin-bottom": 4,
+    "margin-left": 6,
+    "margin-right": 6,
     "modules-left": ["sway/workspaces", "sway/mode", "sway/window"],
     "modules-center": ["clock"],
 {{- if eq .profile "bare-metal" }}
@@ -18,7 +22,16 @@
     },
     "group/connectivity": {
         "orientation": "horizontal",
-        "modules": ["battery", "pulseaudio", "bluetooth", "network"]
+        "modules": ["custom/keyboard-toggle", "battery", "pulseaudio", "bluetooth", "network"]
+    },
+    "custom/keyboard-toggle": {
+        "return-type": "json",
+        "interval": 2,
+        "exec-if": "{{ .chezmoi.homeDir }}/.local/bin/laptop-keyboard-toggle should-show",
+        "exec": "{{ .chezmoi.homeDir }}/.local/bin/laptop-keyboard-toggle",
+        "on-click": "{{ .chezmoi.homeDir }}/.local/bin/laptop-keyboard-toggle toggle",
+        "format": "<span font='JetBrainsMono Nerd Font 14'>{}</span>",
+        "tooltip": true
     },
 {{- end }}
     "sway/mode": {

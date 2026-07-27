@@ -25,7 +25,16 @@ window#waybar {
 
 /* Pill style for every outer module + group. Same bar background as before
  * the rewrite ({{`{{ $t.bar_bg_rgba }}`}}, ~90% opaque dark). 10px radius,
- * 6px vertical / 12px horizontal interior padding, 4px / 6px outer margin. */
+ * 6px vertical / 12px horizontal interior padding, 0 vertical / 6px
+ * horizontal outer margin.
+ *
+ * Vertical margin is 0 (not 4) so pills fill the bar's exclusive-zone
+ * height edge-to-edge — otherwise waybar computes a taller minimum
+ * (~46px) to fit content + margin, sway reserves that extra height,
+ * and the ~6px of leftover space renders as an asymmetric bottom gap
+ * between the pills and the first tile. Padding still gives interior
+ * breathing room; horizontal 6px margin still separates pills from
+ * each other. */
 #workspaces,
 #window,
 #clock,
@@ -35,7 +44,7 @@ window#waybar {
   background-color: {{ $t.bar_bg_rgba }};
   border-radius: 10px;
   padding: 6px 12px;
-  margin: 4px 6px;
+  margin: 0 6px;
 }
 
 /* Workspaces still wraps buttons; their existing focused/visible/urgent
@@ -112,6 +121,7 @@ window#waybar {
 #custom-weather,
 #custom-mail,
 #bluetooth,
+#custom-keyboard-toggle,
 #custom-media {
   margin: 0 6px;
   padding: 0;

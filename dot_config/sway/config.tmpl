@@ -17,6 +17,23 @@ set $menu wofi --show drun
 {{- end }}
 
 # Startup
+#
+# Bootstrap systemd user-session integration. Two exec_always so they re-fire
+# on `swaymsg reload`, not just on session start:
+#
+#   1. Import sway's env vars (WAYLAND_DISPLAY, SWAYSOCK, XDG_CURRENT_DESKTOP,
+#      DISPLAY for XWayland clients) into the systemd user manager. Without
+#      this, user services (swayidle, xdg-desktop-portal-wlr, etc.) come up
+#      with empty env vars and can't talk to sway.
+#   2. Restart swayidle. It's a systemd user service (WantedBy=graphical-
+#      session.target) but sway doesn't ship a session target that activates
+#      graphical-session.target, and graphical-session.target itself has
+#      RefuseManualStart=yes so we can't just start it. Restarting the
+#      swayidle service directly sidesteps the whole session-target dance —
+#      it also picks up AC state changes cleanly on `sway reload`.
+exec_always systemctl --user import-environment WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP DISPLAY
+exec_always systemctl --user restart swayidle.service
+
 exec swaync
 
 {{- if eq .wm "i3" }}
@@ -72,6 +89,22 @@ input type:touchpad {
     # already 'focus right' in the vim-hjkl bindings further down).
     # Ctrl+Alt+L is the universal Linux convention for screen lock.
     bindsym Ctrl+Alt+l exec swaylock
+
+    # Toggle internal laptop keyboard on/off. Use case: place an external
+    # keyboard on top of the laptop's built-in one (common with Corne /
+    # split ergonomic keyboards) — this stops the internal from
+    # registering key-presses from whatever's sitting on it. Toggle again
+    # to bring it back. The bind still works from the external keyboard
+    # because sway treats each input device independently.
+    # Also fires a swaync notification with the new state so you know it
+    # actually took (silent toggles are terrible UX — you sit staring at
+    # the bar wondering if it worked).
+    # --no-repeat: sway's key auto-repeat (default 25/sec) fires this
+    # bind many times per hold, ping-ponging the toggle state and
+    # spamming notifications. The flag makes the bind fire exactly
+    # once per press. The helper script (also invoked by waybar's
+    # laptop-keyboard-toggle module) handles the toggle + notify.
+    bindsym --no-repeat $mod+Escape exec ~/.local/bin/laptop-keyboard-toggle toggle
 {{- end }}
 
     # Screenshots
@@ -198,7 +231,11 @@ bar {
 ### Appearance
 gaps inner 5
 gaps outer 2
-gaps top 2
+# 4px below the waybar for symmetry with waybar's own 4px margin-top
+# (screen-edge → bar top). Pills have 0 vertical margin inside, so bar
+# tightly wraps the pills; the visible spacing above and below the bar
+# comes from waybar's margin-top + this gaps-top respectively.
+gaps top 0
 gaps bottom 2
 smart_gaps on
 
@@ -229,6 +266,14 @@ for_window [class="firefox" title="About Mozilla Firefox"] floating enable
 for_window [class="gnome-control-center"] floating enable
 for_window [class="gnome-calculator"] floating enable
 for_window [title="Picture-in-picture"] floating enable
+
+# Godot editor (runs under XWayland): float every dialog / modal / picker,
+# leave only the main editor tiled. Main-editor title format is
+# "<scene>.tscn - <project> - Godot Engine"; every other window (Open File,
+# Save Scene As, Project Settings, Debugger, Import Dialog, etc.) has a
+# title that doesn't contain "Godot Engine". PCRE negative-lookahead
+# excludes the main editor from the float rule.
+for_window [class="Godot" title="^(?!.*Godot Engine).*"] floating enable
 
 {{- if eq .wm "i3" }}
 include /etc/i3/config.d/*
