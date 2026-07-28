@@ -132,6 +132,13 @@ window#waybar {
   padding-right: 9px;
 }
 
+/* Keyboard-off glyph (󰌐) hugs the right edge of its em-box, so it visually
+ * squashes against the battery icon that follows. 2px right padding to
+ * restore a symmetric-looking gap. */
+#custom-keyboard-toggle {
+  padding-right: 7px;
+}
+
 /* Clock pill — picks up base pill styling (background, border-radius,
  * padding, margin) from the shared selector above. We only set
  * clock-specific bits here: min-width to keep the time column from
