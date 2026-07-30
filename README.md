@@ -436,6 +436,62 @@ ever ships a v8.
 Without these fonts, icons will render as boxes (or, in the woff2-only case,
 as nothing at all).
 
+### Bare-metal extras: display management
+
+`wdisplays` is a native Wayland GUI for arranging outputs — a small GTK
+app that shows each output as a draggable rectangle with mode/scale/
+transform pickers and a 10-second confirm-or-revert safety timer. It
+uses the same `wlr-output-management-unstable-v1` protocol sway
+exposes internally, so it doesn't fight the compositor.
+
+```bash
+# Arch
+sudo pacman -S wdisplays
+
+# Fedora
+sudo dnf install wdisplays
+```
+
+`kanshi` is the automated alternative — a daemon that auto-applies
+profiles on display hotplug. Worth it if you have multiple regular
+setups (home desk / office / etc.); overkill if you only occasionally
+plug into a random projector, in which case wdisplays alone is enough.
+Not installed by default.
+
+### Bare-metal extras: power management
+
+Idle handling, CPU profile switching, low-battery warnings, and
+critical-battery suspend are wired up automatically by
+`run_once_after_install-power.sh` and
+`run_onchange_after_install-power-guard.sh` on Arch. Both scripts are
+idempotent and only run on machines with a battery
+(`/sys/class/power_supply/BAT0`). Fedora ports are TODO — for now,
+Fedora users need to install the packages manually and hand-port the
+service/udev/config drops the scripts perform.
+
+| Package | What it does |
+|---------|--------------|
+| `swayidle` | Idle-timeout daemon (lock / dim / suspend on inactivity). Wrapped by `~/.local/bin/swayidle-launcher` for an AC-vs-battery timetable. |
+| `power-profiles-daemon` | Runtime CPU/PCIe/wireless power-profile switching. Auto-switched by the `auto-power-profile` user timer. |
+| `thermald` | Intel thermal daemon. **Skipped on Lenovo DYTC platforms** (`/sys/devices/platform/thinkpad_acpi/dytc_lapmode`) — the firmware owns thermal there and thermald refuses to run. |
+
+The udev-driven battery guard installed by `power-guard` uses only
+kernel + systemd + udev — no additional packages. It notifies at 10%
+and 8%, and calls `systemctl suspend` at 5%, all triggered off
+`power_supply` change events (event-driven, not polling). The
+guard writes `/usr/local/bin/battery-critical-check` and
+`/etc/systemd/system/battery-critical-check.service` and disables the
+older `/etc/UPower/UPower.conf.d/10-critical-suspend.conf` drop-in in
+place (commented, not deleted — revive by uncommenting).
+
+```bash
+# Arch
+sudo pacman -S swayidle power-profiles-daemon thermald
+
+# Fedora
+sudo dnf install swayidle power-profiles-daemon thermald
+```
+
 ### Bare-metal extras: wifi + bluetooth managers
 
 On `profile = "bare-metal"`, the waybar `network` module is wired to launch
