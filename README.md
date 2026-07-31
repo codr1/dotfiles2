@@ -436,6 +436,41 @@ ever ships a v8.
 Without these fonts, icons will render as boxes (or, in the woff2-only case,
 as nothing at all).
 
+### Clipboard
+
+Wayland has no persistent clipboard — when the source app exits, the
+clipboard content dies with it. `cliphist` fixes this by watching
+`wl-paste` and recording every text / image entry into a local
+database. The picker keybind is `$mod+Shift+v` (bare `$mod+v` is
+sway's built-in `splitv` layout primitive); entries can be searched
+via wofi's incremental filter.
+
+```bash
+# Arch
+sudo pacman -S wl-clipboard cliphist
+
+# Fedora
+sudo dnf install wl-clipboard cliphist
+```
+
+`wl-clipboard` is usually already installed (sway pulls it in for
+`grim | wl-copy` screenshot shortcuts) but list it explicitly so a
+minimal install doesn't miss it.
+
+Sway config wires two background watchers (text + image) on session
+start and one keybind (`$mod+v`) for the picker — both gated on
+`wm = sway` so they don't fire on i3 (X11) sessions where the whole
+stack doesn't apply.
+
+**Caveat**: cliphist records everything by default, including
+passwords copied out of a password manager. Two mitigations if that
+matters: (a) configure your password manager to use
+`wl-copy --clear-after 30` where possible, so the entry drops off
+the active clipboard quickly, and (b) `cliphist delete-query <pattern>`
+to manually purge entries. Threat model is the same as any X11
+clipboard manager — a bad actor with your unlocked session can read
+your history.
+
 ### Bare-metal extras: display management
 
 `wdisplays` is a native Wayland GUI for arranging outputs — a small GTK

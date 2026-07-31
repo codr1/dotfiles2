@@ -64,6 +64,16 @@ exec wl-paste --watch ~/.local/bin/clipboard-to-win
 exec systemctl --user restart win-to-clipboard
 {{- end }}
 
+{{- if eq .wm "sway" }}
+# Clipboard history — cliphist watches wl-paste and records every
+# text / image entry that lands on the selection. Retrieval keybind
+# is $mod+v (see Key bindings below). Two watchers with explicit
+# --type filters as the cliphist docs recommend — the default
+# combined watcher can miss image entries under certain toolkits.
+exec wl-paste --type text --watch cliphist store
+exec wl-paste --type image --watch cliphist store
+{{- end }}
+
 {{- if eq .profile "bare-metal" }}
 # Bare-metal startup: bluetooth tray applet (blueman package)
 exec blueman-applet
@@ -116,6 +126,17 @@ input type:touchpad {
     bindsym $mod+Shift+F3 exec grim ~/Pictures/screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
     bindsym $mod+Shift+F4 exec grim -g "$(slurp)" ~/Pictures/screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
     bindsym Print exec grim - | wl-copy
+{{- end }}
+
+    # Clipboard history picker (Wayland only). cliphist list emits
+    # numbered entries → wofi picks one → cliphist decode restores
+    # the raw bytes → wl-copy puts them back on the clipboard. Paste
+    # normally with Ctrl+V afterward.
+    #
+    # $mod+v is already taken by sway's `splitv` layout primitive
+    # (vertical split), so we use $mod+Shift+v for the picker.
+{{- if eq .wm "sway" }}
+    bindsym $mod+Shift+v exec cliphist list | wofi --dmenu | cliphist decode | wl-copy
 {{- end }}
 
 {{- if eq .wm "i3" }}
